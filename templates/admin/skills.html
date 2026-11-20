@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Skills Directory Management – Admin – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-mortarboard-fill text-info me-2"></i> Skills Catalog Management</h3>
+            <p class="text-muted small mb-0">Add, monitor, and maintain platform skills and domain categories</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Skill Form -->
+        <div class="col-lg-4">
+            <div class="custom-card p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle text-primary me-2"></i> Add New Skill</h5>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="name">{{ form.name.label.text }}</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. Kotlin Programming") }}
+                        {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="category">{{ form.category.label.text }}</label>
+                        {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                        {% for error in form.category.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="description">{{ form.description.label.text }}</label>
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3, placeholder="Short description of core concepts covered in this skill...") }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                        <i class="bi bi-plus-lg me-1"></i> Create Skill
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Skills List & Filter -->
+        <div class="col-lg-8">
+            <div class="custom-card p-3 mb-3">
+                <form method="GET" class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Search skill name..." value="{{ search }}">
+                    </div>
+                    <div class="col-md-4">
+                        <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            {% for cat, label in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Filter</button>
+                        <a href="{{ url_for('admin.skills') }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="custom-card overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Skill Name</th>
+                                <th>Category</th>
+                                <th>Teachers</th>
+                                <th>Learners</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in skills %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi {{ s.icon }} text-primary fs-5"></i>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ s.name }}</div>
+                                            <div class="text-muted text-truncate" style="max-width: 250px; font-size: 0.75rem;">{{ s.description }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ s.category }}</span></td>
+                                <td><span class="badge bg-primary-subtle text-primary">{{ s.teachers_count }}</span></td>
+                                <td><span class="badge bg-warning-subtle text-warning-emphasis">{{ s.learners_count }}</span></td>
+                                <td class="text-end">
+                                    <form action="{{ url_for('admin.delete_skill', skill_id=s.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this skill and all associated user skill mappings?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

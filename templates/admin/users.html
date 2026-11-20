@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users – Admin – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-people-fill text-danger me-2"></i> User Management</h3>
+            <p class="text-muted small mb-0">Oversee member accounts, verify standing, manage administrative roles</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="custom-card p-3 mb-4">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, username, or email..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Account Statuses</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+                    <option value="banned" {% if status_filter == 'banned' %}selected{% endif %}>Suspended Only</option>
+                    <option value="admin" {% if status_filter == 'admin' %}selected{% endif %}>Administrators</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="custom-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Location & Availability</th>
+                        <th>Skills (Teach / Learn)</th>
+                        <th>Rating / Swaps</th>
+                        <th>Role & Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    {% for u in users_page.items %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ u.get_avatar_url() }}" alt="{{ u.full_name }}" class="avatar-img" width="36" height="36">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ u.full_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@{{ u.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <div>{{ u.location }}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ u.availability }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">{{ u.teaching_skills()|length }} Teach</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis">{{ u.learning_skills()|length }} Learn</span>
+                        </td>
+                        <td>
+                            <div class="text-warning fw-semibold">★ {{ u.average_rating }} ({{ u.rating_count }})</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ u.completed_exchanges_count }} completed</div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                {% if u.is_admin %}
+                                <span class="badge bg-danger">Admin</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark border">Member</span>
+                                {% endif %}
+
+                                {% if u.is_active_account %}
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger">Suspended</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="{{ url_for('auth.user_profile', username=u.username) }}" class="btn btn-outline-secondary btn-sm" title="View Public Profile">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if u.id != current_user.id %}
+                                <form action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Change account active status for this user?');">
+                                    <button type="submit" class="btn btn-sm {% if u.is_active_account %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if u.is_active_account %}Suspend{% else %}Activate{% endif %}">
+                                        <i class="bi {% if u.is_active_account %}bi-person-x{% else %}bi-person-check{% endif %}"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('admin.toggle_user_admin', user_id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Toggle admin privilege?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Toggle Admin">
+                                        <i class="bi bi-shield"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if users_page.pages > 1 %}
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if users_page.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.users', page=users_page.prev_num, q=search, status=status_filter) }}">Previous</a></li>
+            {% endif %}
+            {% for p in users_page.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    <li class="page-item {% if p == users_page.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.users', page=p, q=search, status=status_filter) }}">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if users_page.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.users', page=users_page.next_num, q=search, status=status_filter) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Exchanges – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-arrow-repeat text-primary me-2"></i> Skill Exchanges Hub</h3>
+            <p class="text-muted small mb-0">Track all your knowledge exchange proposals, active swaps, and learning history</p>
+        </div>
+        <a href="{{ url_for('main.smart_matching') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> New Exchange
+        </a>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-pills mb-4 gap-2" id="exchangeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'active' or not active_tab %}active{% endif %} position-relative" id="active-tab" data-bs-toggle="pill" data-bs-target="#tab-active" type="button" role="tab">
+                <i class="bi bi-play-circle me-1"></i> Active Swaps
+                <span class="badge rounded-pill bg-success ms-1">{{ active_exchanges|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'pending' %}active{% endif %} position-relative" id="incoming-tab" data-bs-toggle="pill" data-bs-target="#tab-incoming" type="button" role="tab">
+                <i class="bi bi-inbox me-1"></i> Incoming Requests
+                {% if pending_received|length > 0 %}
+                <span class="badge rounded-pill bg-danger ms-1">{{ pending_received|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sent-tab" data-bs-toggle="pill" data-bs-target="#tab-sent" type="button" role="tab">
+                <i class="bi bi-send me-1"></i> Sent Requests
+                <span class="badge rounded-pill bg-secondary ms-1">{{ pending_sent|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'completed' %}active{% endif %}" id="completed-tab" data-bs-toggle="pill" data-bs-target="#tab-completed" type="button" role="tab">
+                <i class="bi bi-check-circle me-1"></i> Completed
+                <span class="badge rounded-pill bg-primary ms-1">{{ completed_exchanges|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="archived-tab" data-bs-toggle="pill" data-bs-target="#tab-archived" type="button" role="tab">
+                <i class="bi bi-archive me-1"></i> Declined / Cancelled
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="exchangeTabsContent">
+        <!-- 1. Active Exchanges Tab -->
+        <div class="tab-pane fade {% if active_tab == 'active' or not active_tab %}show active{% endif %}" id="tab-active" role="tabpanel">
+            {% if active_exchanges %}
+            <div class="row g-4">
+                {% for ex in active_exchanges %}
+                {% set partner = ex.receiver if ex.sender_id == current_user.id else ex.sender %}
+                <div class="col-md-6">
+                    <div class="custom-card p-4 h-100 border-success d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img" width="44" height="44">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">
+                                            <a href="{{ url_for('auth.user_profile', username=partner.username) }}" class="text-dark text-decoration-none">
+                                                {{ partner.full_name }}
+                                            </a>
+                                        </h6>
+                                        <div class="small text-muted">@{{ partner.username }}</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Active
+                                </span>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-muted">You Teach:</span>
+                                    <span class="fw-bold text-primary">{{ ex.offered_skill.name if ex.sender_id == current_user.id else ex.requested_skill.name }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small">
+                                    <span class="text-muted">You Learn:</span>
+                                    <span class="fw-bold text-warning">{{ ex.requested_skill.name if ex.sender_id == current_user.id else ex.offered_skill.name }}</span>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-clock me-1"></i> Schedule: {{ ex.schedule_notes }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3 border-top">
+                            <a href="{{ url_for('messages.chat', partner_id=partner.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                <i class="bi bi-chat-dots me-1"></i> Chat
+                            </a>
+                            <form action="{{ url_for('exchanges.complete_exchange', exchange_id=ex.id) }}" method="POST" onsubmit="return confirm('Mark this knowledge exchange as successfully completed?');">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-lg me-1"></i> Complete Swap
+                                </button>
+                            </form>
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=ex.id) }}" class="btn btn-outline-secondary btn-sm">
+                                Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 bg-white rounded border">
+                <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark">No active knowledge exchanges right now</h5>
+                <p class="text-muted small mb-3">Accept pending incoming requests or browse members to initiate a new swap.</p>
+                <a href="{{ url_for('main.smart_matching') }}" class="btn btn-primary btn-sm">Explore Smart Matches</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 2. Incoming Requests Tab -->
+        <div class="tab-pane fade {% if active_tab == 'pending' %}show active{% endif %}" id="tab-incoming" role="tabpanel">
+            {% if pending_received %}
+            <div class="row g-4">
+                {% for req in pending_received %}
+                <div class="col-md-6">
+                    <div class="custom-card p-4 h-100 border-warning d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ req.sender.get_avatar_url() }}" alt="{{ req.sender.full_name }}" class="avatar-img" width="44" height="44">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ req.sender.full_name }}</h6>
+                                        <div class="small text-muted">@{{ req.sender.username }} &bull; ★ {{ req.sender.average_rating }}</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                    <i class="bi bi-hourglass-split me-1"></i> Awaiting Your Action
+                                </span>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="small text-muted mb-1">
+                                    Offers to Teach: <strong class="text-primary">{{ req.offered_skill.name }}</strong>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    Wants to Learn: <strong class="text-warning">{{ req.requested_skill.name }}</strong>
+                                </div>
+                                <div class="small text-dark fst-italic border-top pt-2">
+                                    "{{ req.message }}"
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3 border-top">
+                            <form action="{{ url_for('exchanges.accept_exchange', exchange_id=req.id) }}" method="POST" class="flex-grow-1">
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-check-lg me-1"></i> Accept Swap
+                                </button>
+                            </form>
+                            <form action="{{ url_for('exchanges.reject_exchange', exchange_id=req.id) }}" method="POST" class="flex-grow-1">
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    <i class="bi bi-x-lg me-1"></i> Decline
+                                </button>
+                            </form>
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=req.id) }}" class="btn btn-outline-secondary btn-sm">
+                                Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 bg-white rounded border">
+                <i class="bi bi-envelope-open fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark">No pending incoming requests</h5>
+                <p class="text-muted small mb-0">When other members request to exchange knowledge with you, they will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 3. Sent Requests Tab -->
+        <div class="tab-pane fade" id="tab-sent" role="tabpanel">
+            {% if pending_sent %}
+            <div class="row g-4">
+                {% for req in pending_sent %}
+                <div class="col-md-6">
+                    <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ req.receiver.get_avatar_url() }}" alt="{{ req.receiver.full_name }}" class="avatar-img" width="44" height="44">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ req.receiver.full_name }}</h6>
+                                        <div class="small text-muted">@{{ req.receiver.username }}</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-secondary-subtle text-secondary border">Sent &bull; Pending</span>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="small text-muted mb-1">You Offer: <strong class="text-primary">{{ req.offered_skill.name }}</strong></div>
+                                <div class="small text-muted">You Requested: <strong class="text-warning">{{ req.requested_skill.name }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3 border-top">
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=req.id) }}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                View Proposal
+                            </a>
+                            <form action="{{ url_for('exchanges.cancel_exchange', exchange_id=req.id) }}" method="POST" onsubmit="return confirm('Cancel this exchange request?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    Cancel Request
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 bg-white rounded border">
+                <i class="bi bi-send fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark">No sent exchange proposals pending</h5>
+                <p class="text-muted small mb-0">Browse members and send exchange requests to get started!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 4. Completed Exchanges Tab -->
+        <div class="tab-pane fade {% if active_tab == 'completed' %}show active{% endif %}" id="tab-completed" role="tabpanel">
+            {% if completed_exchanges %}
+            <div class="row g-4">
+                {% for ex in completed_exchanges %}
+                {% set partner = ex.receiver if ex.sender_id == current_user.id else ex.sender %}
+                <div class="col-md-6">
+                    <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img" width="44" height="44">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ partner.full_name }}</h6>
+                                        <div class="small text-muted">Completed {{ ex.completed_at.strftime('%b %d, %Y') if ex.completed_at else '' }}</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                    <i class="bi bi-trophy-fill me-1"></i> Completed
+                                </span>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="small text-muted">Exchanged: <strong>{{ ex.offered_skill.name }}</strong> & <strong>{{ ex.requested_skill.name }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3 border-top">
+                            {% if not ex.has_reviewed(current_user.id) %}
+                            <a href="{{ url_for('exchanges.leave_review', exchange_id=ex.id) }}" class="btn btn-warning btn-sm flex-grow-1 text-dark fw-semibold">
+                                <i class="bi bi-star me-1"></i> Leave a Review
+                            </a>
+                            {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center">
+                                <i class="bi bi-check2 me-1"></i> Review Submitted
+                            </span>
+                            {% endif %}
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=ex.id) }}" class="btn btn-outline-secondary btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 bg-white rounded border">
+                <i class="bi bi-trophy fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark">No completed exchanges yet</h5>
+                <p class="text-muted small mb-0">Once you and your partner finish your study sessions, mark them completed to leave reviews!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 5. Archived / Declined Tab -->
+        <div class="tab-pane fade" id="tab-archived" role="tabpanel">
+            {% if archived_exchanges %}
+            <div class="d-flex flex-column gap-3">
+                {% for ex in archived_exchanges %}
+                {% set partner = ex.receiver if ex.sender_id == current_user.id else ex.sender %}
+                <div class="p-3 bg-white border rounded-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img" width="36" height="36">
+                        <div>
+                            <div class="fw-bold small">{{ partner.full_name }}</div>
+                            <div class="small text-muted">{{ ex.offered_skill.name }} &harr; {{ ex.requested_skill.name }}</div>
+                        </div>
+                    </div>
+                    <span class="badge bg-secondary">{{ ex.status|capitalize }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-white rounded border">
+                <p class="text-muted small mb-0">No declined or cancelled exchanges.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

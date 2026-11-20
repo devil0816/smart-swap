@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Review Exchange with {{ partner.full_name }} – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="custom-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-warning text-white rounded-circle mb-2" style="width: 48px; height: 48px;">
+                        <i class="bi bi-star-fill fs-4"></i>
+                    </span>
+                    <h3 class="fw-bold mb-1">Leave a Review</h3>
+                    <p class="text-muted small">Share your feedback on the knowledge exchange with {{ partner.full_name }}</p>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border d-flex align-items-center gap-3 mb-4">
+                    <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img" width="50" height="50">
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ partner.full_name }}</h6>
+                        <div class="small text-muted">Taught: {{ exchange.requested_skill.name if exchange.sender_id == current_user.id else exchange.offered_skill.name }}</div>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="rating">{{ form.rating.label.text }}</label>
+                        {{ form.rating(class="form-select form-select-lg" + (" is-invalid" if form.rating.errors else "")) }}
+                        {% for error in form.rating.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold" for="comment">{{ form.comment.label.text }}</label>
+                        {{ form.comment(class="form-control" + (" is-invalid" if form.comment.errors else ""), rows=4, placeholder="What did you learn? How was their teaching style, communication, and punctuality?") }}
+                        {% for error in form.comment.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('exchanges.exchange_detail', exchange_id=exchange.id) }}" class="btn btn-outline-secondary">
+                            Skip for Now
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            Publish Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

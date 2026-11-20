@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}User Reports Moderation – Admin – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-shield-exclamation text-danger me-2"></i> Safety & Moderation Reports</h3>
+            <p class="text-muted small mb-0">Review reports submitted by community members</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="d-flex gap-2 mb-4">
+        <a href="{{ url_for('admin.reports', status='pending') }}" class="btn btn-sm {% if selected_status == 'pending' %}btn-danger{% else %}btn-outline-secondary{% endif %}">Pending</a>
+        <a href="{{ url_for('admin.reports', status='resolved') }}" class="btn btn-sm {% if selected_status == 'resolved' %}btn-success{% else %}btn-outline-secondary{% endif %}">Resolved</a>
+        <a href="{{ url_for('admin.reports', status='dismissed') }}" class="btn btn-sm {% if selected_status == 'dismissed' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Dismissed</a>
+        <a href="{{ url_for('admin.reports', status='all') }}" class="btn btn-sm {% if selected_status == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">All Reports</a>
+    </div>
+
+    <!-- Reports Cards -->
+    {% if reports %}
+    <div class="d-flex flex-column gap-3">
+        {% for rep in reports %}
+        <div class="custom-card p-4 {% if rep.status == 'pending' %}border-danger{% endif %}">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge {% if rep.status == 'pending' %}bg-danger{% elif rep.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ rep.status|upper }}
+                    </span>
+                    <span class="fw-bold text-dark">Report #{{ rep.id }}: {{ rep.reason }}</span>
+                </div>
+                <div class="text-muted small">Submitted on {{ rep.created_at.strftime('%b %d, %Y at %H:%M') }}</div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border">
+                        <div class="small text-muted fw-semibold mb-1">Reported User:</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ rep.reported_user.get_avatar_url() }}" alt="{{ rep.reported_user.full_name }}" class="avatar-img" width="32" height="32">
+                            <div>
+                                <span class="fw-bold text-danger">{{ rep.reported_user.full_name }}</span>
+                                <span class="text-muted small">(@{{ rep.reported_user.username }})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border">
+                        <div class="small text-muted fw-semibold mb-1">Submitted By:</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ rep.reporter.get_avatar_url() }}" alt="{{ rep.reporter.full_name }}" class="avatar-img" width="32" height="32">
+                            <div>
+                                <span class="fw-bold text-dark">{{ rep.reporter.full_name }}</span>
+                                <span class="text-muted small">(@{{ rep.reporter.username }})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if rep.details %}
+            <div class="p-3 bg-light rounded border mb-3">
+                <div class="small text-muted fw-semibold mb-1">Report Details & Evidence:</div>
+                <p class="small text-dark mb-0">{{ rep.details }}</p>
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2 pt-2 border-top">
+                <form action="{{ url_for('admin.update_report', report_id=rep.id) }}" method="POST">
+                    <input type="hidden" name="status" value="resolved">
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-check-lg me-1"></i> Mark Resolved
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.update_report', report_id=rep.id) }}" method="POST">
+                    <input type="hidden" name="status" value="dismissed">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle me-1"></i> Dismiss
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.toggle_user_status', user_id=rep.reported_user.id) }}" method="POST" onsubmit="return confirm('Toggle active suspension state for reported user?');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        {% if rep.reported_user.is_active_account %}Suspend @{{ rep.reported_user.username }}{% else %}Unsuspend @{{ rep.reported_user.username }}{% endif %}
+                    </button>
+                </form>
+                <a href="{{ url_for('auth.user_profile', username=rep.reported_user.username) }}" class="btn btn-outline-secondary btn-sm ms-auto">
+                    Inspect Profile
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded border">
+        <i class="bi bi-shield-check fs-1 text-success mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark">No reports in this category</h5>
+        <p class="text-muted small mb-0">Everything looks peaceful and in order.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

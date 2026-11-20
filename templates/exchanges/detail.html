@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Exchange #{{ exchange.id }} – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('exchanges.index') }}" class="text-decoration-none">Exchanges</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Exchange #{{ exchange.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Exchange Details -->
+        <div class="col-lg-8">
+            <div class="custom-card p-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h4 class="fw-bold mb-0">Skill Exchange #{{ exchange.id }}</h4>
+                            <span class="badge {% if exchange.status == 'accepted' %}bg-success{% elif exchange.status == 'completed' %}bg-primary{% elif exchange.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ exchange.status|upper }}
+                            </span>
+                        </div>
+                        <div class="text-muted small mt-1">Initiated on {{ exchange.created_at.strftime('%B %d, %Y at %H:%M') }}</div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
+                        <a href="{{ url_for('messages.chat', partner_id=partner.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-chat-dots me-1"></i> Open Chat
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Two Parties & Skills Matrix -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 border bg-light h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <img src="{{ exchange.sender.get_avatar_url() }}" alt="{{ exchange.sender.full_name }}" class="avatar-img" width="36" height="36">
+                                <div>
+                                    <h6 class="fw-bold mb-0">{{ exchange.sender.full_name }}</h6>
+                                    <div class="small text-muted">@{{ exchange.sender.username }} (Proposer)</div>
+                                </div>
+                            </div>
+                            <div class="small mt-2 pt-2 border-top">
+                                <span class="text-muted">Teaches:</span>
+                                <strong class="text-primary d-block">{{ exchange.offered_skill.name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 border bg-light h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <img src="{{ exchange.receiver.get_avatar_url() }}" alt="{{ exchange.receiver.full_name }}" class="avatar-img" width="36" height="36">
+                                <div>
+                                    <h6 class="fw-bold mb-0">{{ exchange.receiver.full_name }}</h6>
+                                    <div class="small text-muted">@{{ exchange.receiver.username }} (Partner)</div>
+                                </div>
+                            </div>
+                            <div class="small mt-2 pt-2 border-top">
+                                <span class="text-muted">Teaches:</span>
+                                <strong class="text-warning d-block">{{ exchange.requested_skill.name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exchange Details -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark mb-2">Exchange Proposal Details</h6>
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="small text-muted fw-semibold mb-1">Introduction Message:</div>
+                        <p class="small text-dark mb-0">{{ exchange.message }}</p>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="small text-muted fw-semibold mb-1">Proposed Schedule / Availability:</div>
+                        <p class="small text-dark mb-0"><i class="bi bi-clock me-1 text-primary"></i> {{ exchange.schedule_notes }}</p>
+                    </div>
+                </div>
+
+                <!-- Interactive 3-Session Learning Roadmap & Progress Bar -->
+                <div class="custom-card p-3 mb-4 bg-light border-primary">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-flag-fill text-primary me-2"></i> Learning Roadmap & Milestone Progress
+                        </h6>
+                        <span class="badge bg-primary fs-6">{{ exchange.milestone_percentage }}% Complete</span>
+                    </div>
+
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: {{ exchange.milestone_percentage }}%"></div>
+                    </div>
+
+                    <form action="{{ url_for('exchanges.update_milestone', exchange_id=exchange.id) }}" method="POST" class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 bg-white rounded border">
+                        <div class="small fw-semibold text-muted">Update Completed Sessions:</div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <select name="milestones" class="form-select form-select-sm" style="width: auto;">
+                                <option value="0" {% if exchange.completed_milestones == 0 %}selected{% endif %}>0/3: Not Started</option>
+                                <option value="1" {% if exchange.completed_milestones == 1 %}selected{% endif %}>1/3: Session 1 Finished (Fundamentals)</option>
+                                <option value="2" {% if exchange.completed_milestones == 2 %}selected{% endif %}>2/3: Session 2 Finished (Practical Build)</option>
+                                <option value="3" {% if exchange.completed_milestones == 3 %}selected{% endif %}>3/3: Session 3 Finished (Review & Complete)</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-primary btn-sm">Save Progress</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Shared Learning Resources & Notebook -->
+                <div class="custom-card p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-journal-code text-info me-2"></i> Shared Learning Resources & Links
+                        </h6>
+                        <span class="small text-muted">Collaborative notebook</span>
+                    </div>
+                    <form action="{{ url_for('exchanges.save_shared_notes', exchange_id=exchange.id) }}" method="POST">
+                        <textarea name="shared_notes" class="form-control form-control-sm mb-2" rows="3" placeholder="Save shared GitHub links, documentation URLs, Figma files, or lesson summaries for your exchange...">{{ exchange.shared_notes or '' }}</textarea>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-save me-1"></i> Save Shared Resources
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Action Controls Section -->
+                <div class="pt-3 border-top">
+                    {% if exchange.status == 'pending' %}
+                        {% if exchange.receiver_id == current_user.id %}
+                        <div class="d-flex gap-2">
+                            <form action="{{ url_for('exchanges.accept_exchange', exchange_id=exchange.id) }}" method="POST" class="flex-grow-1">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-lg me-1"></i> Accept Exchange
+                                </button>
+                            </form>
+                            <form action="{{ url_for('exchanges.reject_exchange', exchange_id=exchange.id) }}" method="POST" class="flex-grow-1">
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-x-lg me-1"></i> Decline
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <form action="{{ url_for('exchanges.cancel_exchange', exchange_id=exchange.id) }}" method="POST" onsubmit="return confirm('Cancel this exchange proposal?');">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-1"></i> Cancel Proposal
+                            </button>
+                        </form>
+                        {% endif %}
+
+                    {% elif exchange.status == 'accepted' %}
+                        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between p-3 bg-success-subtle rounded border border-success-subtle mb-3">
+                            <div>
+                                <div class="fw-bold text-success"><i class="bi bi-play-circle-fill me-1"></i> Knowledge Swap in Progress</div>
+                                <div class="small text-muted">Coordinate your sessions through chat or join the encrypted video room!</div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('exchanges.virtual_classroom', exchange_id=exchange.id) }}" class="btn btn-danger fw-semibold">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Launch Virtual Classroom
+                                </a>
+                                <form action="{{ url_for('exchanges.complete_exchange', exchange_id=exchange.id) }}" method="POST" onsubmit="return confirm('Have you completed your reciprocal learning sessions?');">
+                                    <button type="submit" class="btn btn-success fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    {% elif exchange.status == 'completed' %}
+                        <div class="p-3 bg-primary-subtle rounded border border-primary-subtle d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-primary"><i class="bi bi-trophy-fill me-1"></i> Exchange Completed!</div>
+                                <div class="small text-muted">Completed on {{ exchange.completed_at.strftime('%b %d, %Y') if exchange.completed_at else 'recently' }}</div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('exchanges.view_certificate', exchange_id=exchange.id) }}" class="btn btn-outline-primary fw-semibold" target="_blank">
+                                    <i class="bi bi-award-fill me-1"></i> View Certificate
+                                </a>
+                                {% if not my_review %}
+                                <a href="{{ url_for('exchanges.leave_review', exchange_id=exchange.id) }}" class="btn btn-warning text-dark fw-semibold">
+                                    <i class="bi bi-star me-1"></i> Leave Review for {{ partner.full_name }}
+                                </a>
+                                {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle p-2">
+                                    <i class="bi bi-check2-all me-1"></i> You Reviewed this Partner
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reviews Display (if completed) -->
+            {% if exchange.status == 'completed' and (my_review or partner_review) %}
+            <div class="custom-card p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-star-fill text-warning me-2"></i> Exchange Reviews</h5>
+                <div class="row g-3">
+                    {% if my_review %}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="fw-semibold small text-muted mb-1">Your Review for {{ partner.full_name }}:</div>
+                            <div class="text-warning small mb-1">
+                                {% for i in range(my_review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                            </div>
+                            <p class="small text-dark mb-0 fst-italic">"{{ my_review.comment }}"</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if partner_review %}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <div class="fw-semibold small text-muted mb-1">{{ partner.full_name }}'s Review for You:</div>
+                            <div class="text-warning small mb-1">
+                                {% for i in range(partner_review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                            </div>
+                            <p class="small text-dark mb-0 fst-italic">"{{ partner_review.comment }}"</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Partner Profile Snapshot -->
+        <div class="col-lg-4">
+            <div class="custom-card p-4 text-center">
+                <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img shadow mb-3" width="80" height="80">
+                <h5 class="fw-bold mb-1">{{ partner.full_name }}</h5>
+                <div class="text-muted small mb-2">@{{ partner.username }}</div>
+                <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle mb-3">
+                    ★ {{ partner.average_rating }} ({{ partner.rating_count }} reviews)
+                </div>
+
+                <div class="text-start small border-top pt-3 d-flex flex-column gap-2 mb-3">
+                    <div><i class="bi bi-geo-alt text-primary me-2"></i> {{ partner.location }}</div>
+                    <div><i class="bi bi-clock text-primary me-2"></i> {{ partner.availability }}</div>
+                </div>
+
+                <a href="{{ url_for('auth.user_profile', username=partner.username) }}" class="btn btn-outline-secondary btn-sm w-100">
+                    View Full Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

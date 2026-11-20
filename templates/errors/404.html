@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="py-5">
+        <h1 class="display-1 fw-bold text-primary mb-2">404</h1>
+        <h3 class="fw-bold text-dark mb-3">Oops! Knowledge Not Found</h3>
+        <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
+            The page, skill, or user profile you are looking for doesn't exist or has moved.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return to Homepage</a>
+            <a href="{{ url_for('main.explore') }}" class="btn btn-outline-secondary">Browse Skills</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

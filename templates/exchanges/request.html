@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Request Skill Exchange with {{ receiver.full_name }} – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="custom-card p-4 p-md-5">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-2" style="width: 48px; height: 48px;">
+                        <i class="bi bi-arrow-left-right fs-4"></i>
+                    </span>
+                    <h3 class="fw-bold mb-1">Propose a Skill Exchange</h3>
+                    <p class="text-muted small">Send a knowledge swap proposal to {{ receiver.full_name }}</p>
+                </div>
+
+                <!-- Receiver Summary Card -->
+                <div class="p-3 bg-light rounded-3 border d-flex align-items-center gap-3 mb-4">
+                    <img src="{{ receiver.get_avatar_url() }}" alt="{{ receiver.full_name }}" class="avatar-img" width="60" height="60">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0">{{ receiver.full_name }}</h6>
+                        <div class="small text-muted mb-1">{{ receiver.headline }}</div>
+                        <div class="d-flex flex-wrap gap-2 small">
+                            <span class="badge bg-white text-secondary border"><i class="bi bi-geo-alt me-1"></i> {{ receiver.location }}</span>
+                            <span class="badge bg-white text-secondary border"><i class="bi bi-clock me-1"></i> {{ receiver.availability }}</span>
+                            <span class="text-warning fw-semibold">★ {{ receiver.average_rating }} ({{ receiver.rating_count }} reviews)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row g-3 mb-3">
+                        <!-- What You Offer -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-primary" for="offered_skill_id">
+                                <i class="bi bi-mortarboard-fill me-1"></i> Skill You Will Teach:
+                            </label>
+                            {{ form.offered_skill_id(class="form-select" + (" is-invalid" if form.offered_skill_id.errors else "")) }}
+                            {% for error in form.offered_skill_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text small">Selected from your listed teaching skills.</div>
+                        </div>
+
+                        <!-- What You Want -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-warning-emphasis" for="requested_skill_id">
+                                <i class="bi bi-book-fill me-1"></i> Skill You Want to Learn:
+                            </label>
+                            {{ form.requested_skill_id(class="form-select" + (" is-invalid" if form.requested_skill_id.errors else "")) }}
+                            {% for error in form.requested_skill_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text small">Selected from skills {{ receiver.full_name.split(' ')[0] }} teaches.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="schedule_notes">{{ form.schedule_notes.label.text }}</label>
+                        {{ form.schedule_notes(class="form-control" + (" is-invalid" if form.schedule_notes.errors else ""), placeholder="e.g. 1 hour every Sunday over Google Meet or Discord") }}
+                        {% for error in form.schedule_notes.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold" for="message">{{ form.message.label.text }}</label>
+                        {{ form.message(class="form-control" + (" is-invalid" if form.message.errors else ""), rows=4, placeholder="Introduce yourself! Explain what you'd like to learn, what you can share in return, and how you propose structuring your exchange...") }}
+                        {% for error in form.message.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('auth.user_profile', username=receiver.username) }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            <i class="bi bi-send me-1"></i> Send Exchange Proposal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

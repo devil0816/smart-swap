@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Swap – Peer-to-Peer Knowledge Exchange{% endblock %}</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Main Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+                <span
+                    class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle shadow-sm"
+                    style="width: 38px; height: 38px;">
+                    <i class="bi bi-arrow-left-right fs-5"></i>
+                </span>
+                <span class="brand-gradient">Smart Swap</span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.explore' %}active{% endif %}"
+                            href="{{ url_for('main.explore') }}">
+                            <i class="bi bi-compass me-1"></i> Explore Skills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.architecture' %}active{% endif %}"
+                            href="{{ url_for('main.architecture') }}">
+                            <i class="bi bi-cpu me-1 text-info"></i> Architecture & Specs
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.smart_matching' %}active{% endif %}"
+                            href="{{ url_for('main.smart_matching') }}">
+                            <i class="bi bi-stars text-warning me-1"></i> Smart Match
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+                            href="{{ url_for('main.dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'exchanges' in request.endpoint %}active{% endif %}"
+                            href="{{ url_for('exchanges.index') }}">
+                            <i class="bi bi-arrow-repeat me-1"></i> Exchanges
+                            {% if current_user.pending_requests_count > 0 %}
+                            <span class="badge rounded-pill bg-danger ms-1">{{ current_user.pending_requests_count
+                                }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative {% if 'messages' in request.endpoint %}active{% endif %}"
+                            href="{{ url_for('messages.index') }}">
+                            <i class="bi bi-chat-dots me-1"></i> Messages
+                            <span id="navbar-unread-messages"
+                                class="badge rounded-pill bg-primary ms-1 {% if current_user.unread_messages_count == 0 %}d-none{% endif %}">
+                                {{ current_user.unread_messages_count }}
+                            </span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-2">
+                    <!-- Theme Toggle Button -->
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-outline-secondary rounded-circle px-2 py-1 border-0"
+                            id="theme-toggle-btn" title="Toggle Dark/Light Mode">
+                            <i class="bi bi-moon-stars fs-6" id="theme-icon"></i>
+                        </button>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                    <!-- Notifications Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative px-2" href="#" id="notifDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span id="navbar-unread-notifications"
+                                class="position-absolute top-1 start-100 translate-middle p-1 bg-danger border border-light rounded-circle {% if current_user.unread_notifications_count == 0 %}d-none{% endif %}">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" aria-labelledby="notifDropdown"
+                            style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <li class="d-flex justify-content-between align-items-center px-2 py-1 mb-2 border-bottom">
+                                <span class="fw-bold small text-muted">Notifications</span>
+                                <a href="{{ url_for('main.notifications') }}"
+                                    class="small text-primary text-decoration-none">View All</a>
+                            </li>
+                            {% set notifs =
+                            current_user.notifications.order_by(models.Notification.created_at.desc()).limit(4).all() %}
+                            {% if notifs %}
+                            {% for n in notifs %}
+                            <li>
+                                <a class="dropdown-item p-2 rounded small text-wrap {% if not n.is_read %}bg-light fw-semibold{% endif %}"
+                                    href="{{ n.link or url_for('main.notifications') }}">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi {{ n.icon }} text-primary"></i>
+                                        <div>
+                                            <div>{{ n.title }}</div>
+                                            <div class="text-muted text-truncate"
+                                                style="max-width: 220px; font-size: 0.75rem;">{{ n.message }}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            {% else %}
+                            <li class="text-center py-3 text-muted small">No notifications yet</li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    <!-- User Account Menu -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#"
+                            id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{{ current_user.get_avatar_url() }}" alt="{{ current_user.full_name }}"
+                                class="avatar-img" width="34" height="34">
+                            <span class="fw-semibold text-dark">{{ current_user.full_name.split(' ')[0] }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+                            aria-labelledby="userMenuDropdown" style="min-width: 220px;">
+                            <li class="px-3 py-2 border-bottom mb-1">
+                                <div class="fw-bold text-dark">{{ current_user.full_name }}</div>
+                                <div class="small text-muted">@{{ current_user.username }}</div>
+                                <div
+                                    class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle mt-1">
+                                    ★ {{ current_user.average_rating }} ({{ current_user.rating_count }} reviews)
+                                </div>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded"
+                                    href="{{ url_for('auth.user_profile', username=current_user.username) }}">
+                                    <i class="bi bi-person me-2 text-primary"></i> Public Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded" href="{{ url_for('auth.manage_skills') }}">
+                                    <i class="bi bi-mortarboard me-2 text-primary"></i> My Skills (Teach & Learn)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded" href="{{ url_for('auth.edit_profile') }}">
+                                    <i class="bi bi-gear me-2 text-primary"></i> Edit Profile
+                                </a>
+                            </li>
+                            {% if current_user.is_admin %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded text-danger fw-semibold"
+                                    href="{{ url_for('admin.dashboard') }}">
+                                    <i class="bi bi-shield-lock me-2"></i> Admin Panel
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded text-muted" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{{ url_for('auth.login') }}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary px-3 py-2 text-white" href="{{ url_for('auth.register') }}">
+                            Get Started Free
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Notification Alerts -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2"
+            role="alert">
+            {% if category == 'success' %}
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            {% elif category == 'danger' %}
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            {% elif category == 'warning' %}
+            <i class="bi bi-exclamation-circle-fill fs-5"></i>
+            {% else %}
+            <i class="bi bi-info-circle-fill fs-5"></i>
+            {% endif %}
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Platform Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span
+                            class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                            style="width: 32px; height: 32px;">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </span>
+                        <span class="text-white fw-bold fs-5">Smart Swap</span>
+                    </div>
+                    <p class="small text-secondary mb-3">
+                        A peer-to-peer knowledge exchange platform where curious minds teach what they know to learn
+                        what they love. No tuition fees, just mutual growth.
+                    </p>
+
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3">Explore</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="{{ url_for('main.explore') }}">All Skills Catalog</a></li>
+                        <li><a href="{{ url_for('main.explore', category='Programming & Tech') }}">Programming</a></li>
+                        <li><a href="{{ url_for('main.explore', category='Design & Creative') }}">Design & UI/UX</a>
+                        </li>
+                        <li><a href="{{ url_for('main.explore', category='Languages') }}">Languages</a></li>
+                        <li><a href="{{ url_for('main.explore', category='Music & Arts') }}">Music & Arts</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3">How It Works</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="{{ url_for('auth.register') }}">Create Free Account</a></li>
+                        <li><a href="{{ url_for('main.explore') }}">List Skills to Teach & Learn</a></li>
+                        <li><a href="{{ url_for('main.explore') }}">Smart Compatibility Matching</a></li>
+                        <li><a href="{{ url_for('main.explore') }}">Request Knowledge Swap</a></li>
+                        <li><a href="{{ url_for('main.explore') }}">Earn Community Trust & Reviews</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3">Community Principles</h6>
+                    <p class="small text-secondary mb-2">
+                        Smart Swap is non-monetary. We believe in fair time-for-time knowledge exchange, constructive
+                        feedback, and mutual respect.
+                    </p>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-shield-check me-1"></i> Safe & Verified Exchange
+                    </span>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-3 text-center small text-secondary">
+                &copy; {{ now.year }} Smart Swap Platform. Built with Python, Flask, and SQLAlchemy. All rights
+                reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

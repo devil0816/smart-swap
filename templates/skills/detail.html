@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}{{ skill.name }} – Smart Swap Directory{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.explore') }}" class="text-decoration-none">Explore</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ skill.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Skill Header Banner -->
+    <div class="custom-card p-4 p-md-5 mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 shadow-sm" style="width: 64px; height: 64px;">
+                    <i class="bi {{ skill.icon }} fs-2"></i>
+                </div>
+                <div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle mb-1">{{ skill.category }}</span>
+                    <h2 class="fw-bold mb-1">{{ skill.name }}</h2>
+                    <p class="text-muted small mb-0">{{ skill.description or 'A valuable capability in the Smart Swap community directory.' }}</p>
+                </div>
+            </div>
+            <div class="d-flex gap-3">
+                <div class="p-3 bg-light rounded text-center border">
+                    <h4 class="fw-bold text-primary mb-0">{{ teachers|length }}</h4>
+                    <span class="small text-muted">Teachers</span>
+                </div>
+                <div class="p-3 bg-light rounded text-center border">
+                    <h4 class="fw-bold text-warning mb-0">{{ learners|length }}</h4>
+                    <span class="small text-muted">Learners</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mentors & Learners Rows -->
+    <div class="row g-4">
+        <!-- Teachers Column -->
+        <div class="col-lg-6">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-mortarboard-fill text-primary me-2"></i> Mentors Teaching {{ skill.name }}
+                </h5>
+
+                {% if teachers %}
+                <div class="d-flex flex-column gap-3">
+                    {% for us in teachers %}
+                    <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ us.user.get_avatar_url() }}" alt="{{ us.user.full_name }}" class="avatar-img" width="44" height="44">
+                            <div>
+                                <h6 class="fw-bold mb-0">
+                                    <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="text-dark text-decoration-none">
+                                        {{ us.user.full_name }}
+                                    </a>
+                                </h6>
+                                <div class="small text-muted">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ us.proficiency_level }}</span>
+                                    <span>&bull; {{ us.experience_years }} yr{{ 's' if us.experience_years > 1 else '' }} exp</span>
+                                    <span>&bull; ★ {{ us.user.average_rating }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% if current_user.is_authenticated and current_user.id != us.user.id %}
+                        <a href="{{ url_for('exchanges.request_exchange', receiver_id=us.user.id, requested_skill_id=skill.id) }}" class="btn btn-outline-primary btn-sm">
+                            Request Swap
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="btn btn-outline-secondary btn-sm">
+                            Profile
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted small">No members currently offer to teach this skill. Be the first to add it to your teaching profile!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Learners Column -->
+        <div class="col-lg-6">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-book-fill text-warning me-2"></i> Members Wanting to Learn {{ skill.name }}
+                </h5>
+
+                {% if learners %}
+                <div class="d-flex flex-column gap-3">
+                    {% for us in learners %}
+                    <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ us.user.get_avatar_url() }}" alt="{{ us.user.full_name }}" class="avatar-img" width="44" height="44">
+                            <div>
+                                <h6 class="fw-bold mb-0">
+                                    <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="text-dark text-decoration-none">
+                                        {{ us.user.full_name }}
+                                    </a>
+                                </h6>
+                                <div class="small text-muted">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Target: {{ us.proficiency_level }}</span>
+                                    <span>&bull; {{ us.user.location }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="btn btn-outline-secondary btn-sm">
+                            View Profile
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted small">No members are currently waiting to learn this skill.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

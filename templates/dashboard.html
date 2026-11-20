@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- User Welcome Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <img src="{{ current_user.get_avatar_url() }}" alt="{{ current_user.full_name }}" class="avatar-img shadow-sm" width="64" height="64">
+            <div>
+                <h3 class="fw-bold mb-1">Hello, {{ current_user.full_name }}! 👋</h3>
+                <div class="text-muted small">
+                    <span class="badge bg-light text-dark border me-1"><i class="bi bi-geo-alt me-1"></i> {{ current_user.location }}</span>
+                    <span class="badge bg-light text-dark border me-1"><i class="bi bi-clock me-1"></i> {{ current_user.availability }}</span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        ★ {{ current_user.average_rating }} ({{ current_user.rating_count }} reviews)
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('auth.manage_skills') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add / Edit Skills
+            </a>
+            <a href="{{ url_for('main.smart_matching') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-stars me-1"></i> Find Smart Matches
+            </a>
+        </div>
+    </div>
+
+    <!-- 5 Core Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="stat-card stat-gradient-1 shadow-sm">
+                <i class="bi bi-mortarboard-fill stat-icon"></i>
+                <div class="small text-uppercase fw-semibold" style="opacity: 0.9;">Skills Offered</div>
+                <h2 class="display-6 fw-bold mb-0 mt-1">{{ skills_offered_count }}</h2>
+                <a href="{{ url_for('auth.manage_skills') }}" class="small text-white text-decoration-none mt-2 d-inline-block" style="opacity: 0.85;">Manage &rarr;</a>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="stat-card stat-gradient-2 shadow-sm">
+                <i class="bi bi-book-fill stat-icon"></i>
+                <div class="small text-uppercase fw-semibold" style="opacity: 0.9;">Want to Learn</div>
+                <h2 class="display-6 fw-bold mb-0 mt-1">{{ skills_wanted_count }}</h2>
+                <a href="{{ url_for('auth.manage_skills') }}" class="small text-white text-decoration-none mt-2 d-inline-block" style="opacity: 0.85;">Manage &rarr;</a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-4 col-6">
+            <div class="stat-card stat-gradient-3 shadow-sm">
+                <i class="bi bi-bell-fill stat-icon"></i>
+                <div class="small text-uppercase fw-semibold" style="opacity: 0.9;">Pending Requests</div>
+                <h2 class="display-6 fw-bold mb-0 mt-1">{{ pending_count }}</h2>
+                <a href="{{ url_for('exchanges.index', tab='pending') }}" class="small text-white text-decoration-none mt-2 d-inline-block" style="opacity: 0.85;">View Requests &rarr;</a>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-6 col-6">
+            <div class="stat-card stat-gradient-4 shadow-sm">
+                <i class="bi bi-arrow-repeat stat-icon"></i>
+                <div class="small text-uppercase fw-semibold" style="opacity: 0.9;">Active Swaps</div>
+                <h2 class="display-6 fw-bold mb-0 mt-1">{{ active_count }}</h2>
+                <a href="{{ url_for('exchanges.index', tab='active') }}" class="small text-white text-decoration-none mt-2 d-inline-block" style="opacity: 0.85;">In Progress &rarr;</a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="stat-card stat-gradient-5 shadow-sm">
+                <i class="bi bi-trophy-fill stat-icon"></i>
+                <div class="small text-uppercase fw-semibold" style="opacity: 0.9;">Completed Exchanges</div>
+                <h2 class="display-6 fw-bold mb-0 mt-1">{{ completed_count }}</h2>
+                <a href="{{ url_for('exchanges.index', tab='completed') }}" class="small text-white text-decoration-none mt-2 d-inline-block" style="opacity: 0.85;">View History &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incoming Requests Banner (if any) -->
+    {% if pending_incoming %}
+    <div class="card border-warning bg-warning-subtle shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-dark mb-3">
+                <i class="bi bi-bell-fill text-warning me-2"></i> You have {{ pending_incoming|length }} pending exchange request{{ 's' if pending_incoming|length > 1 else '' }} awaiting your response!
+            </h5>
+            <div class="row g-3">
+                {% for req in pending_incoming %}
+                <div class="col-md-6">
+                    <div class="p-3 bg-white rounded border d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ req.sender.get_avatar_url() }}" alt="{{ req.sender.full_name }}" class="avatar-img" width="44" height="44">
+                            <div>
+                                <div class="fw-bold small">{{ req.sender.full_name }}</div>
+                                <div class="text-muted" style="font-size: 0.8rem;">
+                                    Offers: <span class="text-primary fw-semibold">{{ req.offered_skill.name }}</span><br>
+                                    Wants: <span class="text-warning fw-semibold">{{ req.requested_skill.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <form action="{{ url_for('exchanges.accept_exchange', exchange_id=req.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm" title="Accept Request">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            </form>
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=req.id) }}" class="btn btn-outline-secondary btn-sm" title="Review Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <!-- Recommended Exchange Partners (Smart Matching) -->
+        <div class="col-lg-8">
+            <div class="custom-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-stars text-warning me-2"></i> Recommended Exchange Partners
+                        </h5>
+                        <p class="text-muted small mb-0">Calculated by our intelligent skill compatibility engine</p>
+                    </div>
+                    <a href="{{ url_for('main.smart_matching') }}" class="btn btn-outline-primary btn-sm">
+                        View All Matches <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                {% if smart_matches %}
+                <div class="row g-3">
+                    {% for match in smart_matches %}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-light h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ match.user.get_avatar_url() }}" alt="{{ match.user.full_name }}" class="avatar-img" width="40" height="40">
+                                        <div>
+                                            <div class="fw-bold small">
+                                                <a href="{{ url_for('auth.user_profile', username=match.user.username) }}" class="text-dark text-decoration-none">
+                                                    {{ match.user.full_name }}
+                                                </a>
+                                            </div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">@{{ match.user.username }}</div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-{{ match.badge_class }}-subtle text-{{ match.badge_class }} border border-{{ match.badge_class }}-subtle fw-bold">
+                                        <i class="bi {{ match.badge_icon }} me-1"></i> {{ match.score }}%
+                                    </span>
+                                </div>
+
+                                <div class="small mb-2">
+                                    {% if match.they_teach_you %}
+                                    <div class="text-muted mb-1" style="font-size: 0.75rem;">Can Teach You:</div>
+                                    <div class="d-flex flex-wrap gap-1 mb-2">
+                                        {% for s in match.they_teach_you %}
+                                        <span class="skill-badge skill-teach" style="font-size: 0.75rem;">{{ s.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if match.you_teach_them %}
+                                    <div class="text-muted mb-1" style="font-size: 0.75rem;">Wants from You:</div>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for s in match.you_teach_them %}
+                                        <span class="skill-badge skill-learn" style="font-size: 0.75rem;">{{ s.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-top mt-2 d-flex justify-content-between align-items-center">
+                                <span class="small text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i> {{ match.user.availability }}</span>
+                                <a href="{{ url_for('exchanges.request_exchange', receiver_id=match.user.id) }}" class="btn btn-primary btn-sm py-1 px-2" style="font-size: 0.8rem;">
+                                    Swap Skills <i class="bi bi-arrow-left-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 bg-light rounded">
+                    <i class="bi bi-emoji-neutral fs-2 text-muted mb-2"></i>
+                    <p class="text-muted small mb-3">No compatible matches found yet. Add more skills to unlock personalized recommendations!</p>
+                    <a href="{{ url_for('auth.manage_skills') }}" class="btn btn-primary btn-sm">Add Skills Now</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ongoing / Active Exchanges -->
+        <div class="col-lg-4">
+            <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-arrow-repeat text-success me-2"></i> Active Swaps
+                        </h5>
+                        <a href="{{ url_for('exchanges.index') }}" class="small text-primary text-decoration-none">View All</a>
+                    </div>
+
+                    {% if active_exchanges %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for ex in active_exchanges %}
+                        {% set partner = ex.receiver if ex.sender_id == current_user.id else ex.sender %}
+                        <div class="p-3 border rounded-3 bg-light">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ partner.get_avatar_url() }}" alt="{{ partner.full_name }}" class="avatar-img" width="32" height="32">
+                                    <span class="fw-bold small">{{ partner.full_name }}</span>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                            </div>
+                            <div class="small text-muted mb-2" style="font-size: 0.8rem;">
+                                Swapping: <span class="fw-semibold text-dark">{{ ex.offered_skill.name }}</span> &harr; <span class="fw-semibold text-dark">{{ ex.requested_skill.name }}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('messages.chat', partner_id=partner.id) }}" class="btn btn-outline-primary btn-sm py-1 flex-grow-1" style="font-size: 0.75rem;">
+                                    <i class="bi bi-chat-dots me-1"></i> Message
+                                </a>
+                                <a href="{{ url_for('exchanges.virtual_classroom', exchange_id=ex.id) }}" class="btn btn-outline-danger btn-sm py-1" style="font-size: 0.75rem;" title="Join Live Video Classroom">
+                                    <i class="bi bi-camera-video-fill"></i> Video Meet
+                                </a>
+                                <a href="{{ url_for('exchanges.exchange_detail', exchange_id=ex.id) }}" class="btn btn-outline-secondary btn-sm py-1" style="font-size: 0.75rem;">
+                                    Details
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 bg-light rounded">
+                        <i class="bi bi-inbox fs-2 text-muted mb-2"></i>
+                        <p class="text-muted small mb-0">No active knowledge exchanges yet.</p>
+                        <a href="{{ url_for('main.explore') }}" class="btn btn-outline-primary btn-sm mt-3">Browse Skills to Exchange</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Help / Ethics Card -->
+                <div class="mt-4 p-3 bg-primary-subtle rounded-3 border border-primary-subtle">
+                    <div class="fw-semibold small text-primary mb-1"><i class="bi bi-lightbulb me-1"></i> Swap Pro-tip:</div>
+                    <div class="text-dark small" style="font-size: 0.8rem;">
+                        Schedule a quick 15-minute intro chat before starting your lesson sessions to align on goals and pacing.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

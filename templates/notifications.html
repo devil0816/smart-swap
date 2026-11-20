@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="custom-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-bell text-primary me-2"></i> Notifications</h4>
+                        <p class="text-muted small mb-0">Stay updated on exchange requests, messages, and reviews</p>
+                    </div>
+                    {% if notifications %}
+                    <form action="{{ url_for('main.mark_all_notifications_read') }}" method="POST">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                {% if notifications %}
+                <div class="d-flex flex-column gap-2">
+                    {% for n in notifications %}
+                    <a href="{{ n.link or '#' }}" class="text-decoration-none">
+                        <div class="p-3 rounded-3 border d-flex align-items-center gap-3 transition-all {% if not n.is_read %}bg-light border-primary border-start border-3{% else %}bg-white{% endif %}">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle" style="width: 44px; height: 44px; min-width: 44px;">
+                                <i class="bi {{ n.icon }} fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0 fw-semibold text-dark small">{{ n.title }}</h6>
+                                    <span class="text-muted" style="font-size: 0.75rem;">{{ n.created_at.strftime('%b %d, %H:%M') }}</span>
+                                </div>
+                                <div class="small text-muted">{{ n.message }}</div>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bell-slash fs-1 text-muted mb-2 d-block"></i>
+                    <h6 class="fw-bold text-dark">No notifications right now</h6>
+                    <p class="text-muted small mb-0">You're all caught up!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate of Knowledge Exchange – Smart Swap</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+
+        .cert-container {
+            max-width: 950px;
+            margin: 2rem auto;
+            background: #ffffff;
+            padding: 3.5rem;
+            border: 12px double #b45309;
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            position: relative;
+            background-image: radial-gradient(#f8fafc 25%, transparent 25%);
+            background-size: 20px 20px;
+        }
+
+        .cert-inner-border {
+            border: 2px solid #d97706;
+            padding: 2.5rem;
+            position: relative;
+        }
+
+        .cert-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            color: #78350f;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .cert-subtitle {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 3px;
+            color: #d97706;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .cert-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e1b4b;
+            border-bottom: 2px solid #d97706;
+            display: inline-block;
+            padding: 0 2rem 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .cert-seal {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px double #d97706;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #92400e;
+            font-weight: 800;
+            font-size: 0.7rem;
+            box-shadow: 0 4px 10px rgba(180, 83, 9, 0.2);
+        }
+
+        @media print {
+            body {
+                background: none;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .cert-container {
+                box-shadow: none;
+                border-width: 8px;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Print Action Bar -->
+    <div class="container py-3 no-print">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=exchange.id) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Exchange #{{ exchange.id }}
+            </a>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-primary btn-sm">
+                    <i class="bi bi-printer me-1"></i> Print / Save as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Certificate -->
+    <div class="cert-container">
+        <div class="cert-inner-border text-center">
+            <!-- Brand Badge -->
+            <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                <span class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 32px; height: 32px;">
+                    <i class="bi bi-arrow-left-right"></i>
+                </span>
+                <span class="fw-bold tracking-wide" style="font-size: 1.1rem; color: #4338ca;">SMART SWAP PLATFORM</span>
+            </div>
+
+            <div class="cert-subtitle mb-2">ACADEMIC & PEER VERIFICATION OF ACCOMPLISHMENT</div>
+            <h1 class="cert-title mb-4">Certificate of Knowledge Exchange</h1>
+
+            <p class="text-muted fst-italic mb-1" style="font-size: 1.05rem;">
+                This certifies that
+            </p>
+
+            <div class="cert-name">
+                {{ current_user.full_name }}
+            </div>
+
+            <p class="lead text-secondary mx-auto mb-4" style="max-width: 700px; font-size: 1.1rem; line-height: 1.6;">
+                has successfully fulfilled a reciprocal peer-to-peer knowledge exchange with <strong>{{ partner.full_name }}</strong>. 
+                Through dedicated collaborative study, the recipient mastered 
+                <span class="text-primary fw-bold">{{ partner_taught_skill.name }}</span> 
+                while sharing their expertise in 
+                <span class="text-primary fw-bold">{{ my_taught_skill.name }}</span>.
+            </p>
+
+            <!-- Verification Metadata Box -->
+            <div class="row g-3 justify-content-center text-start my-4 py-3 px-4 bg-light rounded-3 border" style="max-width: 750px; margin: 0 auto;">
+                <div class="col-sm-4 text-center">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Exchange Identification</div>
+                    <div class="fw-bold text-dark font-monospace">SS-EX-{{ "%05d"|format(exchange.id) }}</div>
+                </div>
+                <div class="col-sm-4 text-center border-start border-end">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Completion Date</div>
+                    <div class="fw-bold text-dark">{{ exchange.completed_at.strftime('%B %d, %Y') if exchange.completed_at else 'Verified' }}</div>
+                </div>
+                <div class="col-sm-4 text-center">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Peer Verification</div>
+                    <div class="fw-bold text-success"><i class="bi bi-patch-check-fill me-1"></i> Mutual Reviews Completed</div>
+                </div>
+            </div>
+
+            <!-- Signatures and Official Seal -->
+            <div class="row align-items-center mt-5 pt-3">
+                <div class="col-4 text-center">
+                    <div class="fw-bold font-italic mb-1 text-dark" style="font-family: 'Playfair Display', serif; font-size: 1.25rem;">
+                        {{ partner.full_name }}
+                    </div>
+                    <div class="border-top pt-1 text-muted small" style="font-size: 0.8rem;">
+                        Exchange Partner Signature
+                    </div>
+                </div>
+
+                <div class="col-4 d-flex justify-content-center">
+                    <div class="cert-seal">
+                        <i class="bi bi-award-fill fs-4 mb-1"></i>
+                        <span>VERIFIED</span>
+                    </div>
+                </div>
+
+                <div class="col-4 text-center">
+                    <div class="fw-bold font-italic mb-1 text-dark" style="font-family: 'Playfair Display', serif; font-size: 1.25rem;">
+                        Smart Swap Registry
+                    </div>
+                    <div class="border-top pt-1 text-muted small" style="font-size: 0.8rem;">
+                        Platform Governance Seal
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 text-muted" style="font-size: 0.65rem;">
+                Verification Hash: {{ exchange.id }}-{{ current_user.username }}-{{ partner.username }}-VERIFIED-ACADEMIC-RECORD
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

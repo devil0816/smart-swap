@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Messages – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="chat-container">
+        <!-- Sidebar: Conversations List -->
+        <div class="chat-sidebar">
+            <div class="p-3 border-bottom bg-white">
+                <h5 class="fw-bold mb-0"><i class="bi bi-chat-dots text-primary me-2"></i> Messages</h5>
+            </div>
+
+            <div class="overflow-y-auto flex-grow-1">
+                {% if conversations %}
+                    <div class="list-group list-group-flush">
+                        {% for conv in conversations %}
+                        {% set p = conv.partner %}
+                        <a href="{{ url_for('messages.chat', partner_id=p.id) }}" class="list-group-item list-group-item-action p-3 border-0 border-bottom d-flex align-items-center gap-3 {% if active_partner and active_partner.id == p.id %}bg-light border-start border-primary border-3{% endif %}">
+                            <div class="position-relative">
+                                <img src="{{ p.get_avatar_url() }}" alt="{{ p.full_name }}" class="avatar-img" width="44" height="44">
+                                {% if conv.unread_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ conv.unread_count }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0 fw-semibold text-truncate small">{{ p.full_name }}</h6>
+                                    {% if conv.last_message %}
+                                    <span class="text-muted" style="font-size: 0.7rem;">{{ conv.last_message.created_at.strftime('%H:%M') }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted text-truncate" style="font-size: 0.8rem;">
+                                    {% if conv.last_message %}
+                                        {{ conv.last_message.content }}
+                                    {% else %}
+                                        <span class="fst-italic">Start conversation</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 p-3 text-muted small">
+                        <i class="bi bi-chat-square-text fs-2 d-block mb-2"></i>
+                        No conversations yet. Explore mentors and propose a skill exchange to start chatting!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Active Chat Room -->
+        <div class="flex-grow-1 d-flex flex-column bg-white">
+            {% if active_partner %}
+                <!-- Chat Header -->
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white shadow-sm">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ active_partner.get_avatar_url() }}" alt="{{ active_partner.full_name }}" class="avatar-img" width="40" height="40">
+                        <div>
+                            <h6 class="fw-bold mb-0">
+                                <a href="{{ url_for('auth.user_profile', username=active_partner.username) }}" class="text-dark text-decoration-none">
+                                    {{ active_partner.full_name }}
+                                </a>
+                            </h6>
+                            <div class="small text-muted">
+                                @{{ active_partner.username }} &bull;
+                                <i class="bi bi-clock me-1 text-primary"></i> {{ active_partner.availability }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if exchange %}
+                        <a href="{{ url_for('exchanges.exchange_detail', exchange_id=exchange.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-arrow-repeat me-1"></i> Exchange #{{ exchange.id }} ({{ exchange.status|capitalize }})
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('exchanges.request_exchange', receiver_id=active_partner.id) }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-left-right me-1"></i> Propose Exchange
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Chat Message Stream -->
+                {% set last_id = messages[-1].id if messages else 0 %}
+                <div class="chat-messages" id="chat-messages-scroll" data-last-message-id="{{ last_id }}">
+                    {% if messages %}
+                        {% for msg in messages %}
+                        <div class="chat-bubble {% if msg.sender_id == current_user.id %}mine{% else %}theirs{% endif %}">
+                            <div>{{ msg.content }}</div>
+                            <div class="chat-time">{{ msg.created_at.strftime('%b %d, %H:%M') }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center my-auto text-muted small">
+                            <i class="bi bi-chat-quote fs-1 d-block mb-2 text-primary"></i>
+                            Say hello to {{ active_partner.full_name.split(' ')[0] }}! Discuss your learning objectives and preferred schedule.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input Box -->
+                <div class="p-3 border-top bg-white">
+                    <form id="ajax-chat-form" method="POST" action="{{ url_for('messages.chat', partner_id=active_partner.id) }}">
+                        {{ form.hidden_tag() }}
+                        <input type="hidden" id="active-partner-id" value="{{ active_partner.id }}">
+                        <div class="input-group">
+                            <textarea id="chat-input" name="content" class="form-control" rows="1" placeholder="Type your message here..." required style="resize: none;"></textarea>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            {% else %}
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted p-4">
+                    <i class="bi bi-chat-dots display-3 mb-3 text-secondary" style="opacity: 0.3;"></i>
+                    <h5 class="fw-bold text-dark">Select a Conversation</h5>
+                    <p class="small text-muted text-center" style="max-width: 400px;">
+                        Choose a chat from the sidebar or start an exchange with a new mentor to collaborate.
+                    </p>
+                    <a href="{{ url_for('main.explore') }}" class="btn btn-outline-primary btn-sm">
+                        Find Exchange Partners
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

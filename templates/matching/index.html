@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Matching Engine – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <!-- Header banner -->
+    <div class="custom-card p-4 p-md-5 mb-4 text-center bg-white">
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-bold mb-2">
+            <i class="bi bi-stars me-1"></i> Intelligent Compatibility Engine
+        </span>
+        <h2 class="fw-bold mb-2">Smart Matchmaking for Knowledge Swaps</h2>
+        <p class="text-muted small mx-auto" style="max-width: 650px;">
+            Our algorithm analyzes skills you offer and skills you want to learn against the entire community to calculate your mutual compatibility score.
+        </p>
+
+        <!-- Filter Form -->
+        <form method="GET" action="{{ url_for('main.smart_matching') }}" class="row g-2 justify-content-center mt-3">
+            <div class="col-md-3 col-6">
+                <select name="min_score" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="20" {% if min_score == 20 %}selected{% endif %}>All Matches (20%+)</option>
+                    <option value="50" {% if min_score == 50 %}selected{% endif %}>Good Matches (50%+)</option>
+                    <option value="70" {% if min_score == 70 %}selected{% endif %}>Strong Matches (70%+)</option>
+                    <option value="85" {% if min_score == 85 %}selected{% endif %}>Perfect Matches Only (85%+)</option>
+                </select>
+            </div>
+            <div class="col-md-3 col-6">
+                <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat, label in categories %}
+                    <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 col-12">
+                <a href="{{ url_for('main.smart_matching') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    Reset Filter
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Match Results List -->
+    {% if matches %}
+    <div class="d-flex flex-column gap-4">
+        {% for match in matches %}
+        <div class="custom-card p-4 hover-lift border-{{ match.badge_class }}">
+            <div class="row align-items-center g-3">
+                <!-- Compatibility Score Circle -->
+                <div class="col-lg-2 col-md-3 text-center border-end-md">
+                    <div class="match-circle bg-{{ match.badge_class }}-subtle text-{{ match.badge_class }} border border-{{ match.badge_class }} mx-auto mb-2">
+                        <span class="fs-4">{{ match.score }}%</span>
+                        <span style="font-size: 0.65rem; text-transform: uppercase;">Match</span>
+                    </div>
+                    <span class="badge bg-{{ match.badge_class }}-subtle text-{{ match.badge_class }} border border-{{ match.badge_class }} small">
+                        <i class="bi {{ match.badge_icon }} me-1"></i> {{ match.badge }}
+                    </span>
+                </div>
+
+                <!-- User Details & Match Breakdown -->
+                <div class="col-lg-7 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <img src="{{ match.user.get_avatar_url() }}" alt="{{ match.user.full_name }}" class="avatar-img" width="46" height="46">
+                        <div>
+                            <h5 class="fw-bold mb-0">
+                                <a href="{{ url_for('auth.user_profile', username=match.user.username) }}" class="text-dark text-decoration-none">
+                                    {{ match.user.full_name }}
+                                </a>
+                            </h5>
+                            <div class="small text-muted">
+                                @{{ match.user.username }} &bull;
+                                <i class="bi bi-geo-alt text-primary"></i> {{ match.user.location }} &bull;
+                                <i class="bi bi-clock text-primary"></i> {{ match.user.availability }} &bull;
+                                <span class="text-warning fw-semibold">★ {{ match.user.average_rating }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Matrix -->
+                    <div class="row g-2 p-2 bg-light rounded border my-2">
+                        <div class="col-sm-6">
+                            <div class="small text-muted fw-semibold mb-1">
+                                <i class="bi bi-mortarboard text-primary me-1"></i> They Teach (You Want):
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if match.they_teach_you %}
+                                    {% for s in match.they_teach_you %}
+                                    <span class="skill-badge skill-teach">{{ s.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="small text-muted fst-italic">Exploring other offerings</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="small text-muted fw-semibold mb-1">
+                                <i class="bi bi-book text-warning me-1"></i> You Teach (They Want):
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if match.you_teach_them %}
+                                    {% for s in match.you_teach_them %}
+                                    <span class="skill-badge skill-learn">{{ s.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="small text-muted fst-italic">Exploring your offerings</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compatibility Reasons -->
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for r in match.reasons %}
+                        <span class="badge bg-white text-secondary border small">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i> {{ r }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="col-lg-3 col-md-3 text-center text-md-end">
+                    <a href="{{ url_for('exchanges.request_exchange', receiver_id=match.user.id) }}" class="btn btn-primary w-100 py-2 mb-2">
+                        <i class="bi bi-arrow-left-right me-1"></i> Request Swap
+                    </a>
+                    <button type="button" class="btn btn-outline-info w-100 btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#inspectModal{{ match.user.id }}">
+                        <i class="bi bi-calculator me-1"></i> Inspect Score Math
+                    </button>
+                    <a href="{{ url_for('messages.chat', partner_id=match.user.id) }}" class="btn btn-outline-secondary w-100 btn-sm">
+                        <i class="bi bi-chat-dots me-1"></i> Message First
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Breakdown Modal for this Match -->
+        <div class="modal fade" id="inspectModal{{ match.user.id }}" tabindex="-1" aria-labelledby="inspectModalLabel{{ match.user.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold" id="inspectModalLabel{{ match.user.id }}">
+                            <i class="bi bi-cpu text-primary me-2"></i> Compatibility Calculation Breakdown
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center p-3 mb-3 bg-{{ match.badge_class }}-subtle rounded border border-{{ match.badge_class }}-subtle">
+                            <h2 class="display-6 fw-bold text-{{ match.badge_class }} mb-0">{{ match.score }}%</h2>
+                            <div class="fw-semibold small text-{{ match.badge_class }}">{{ match.badge }} with {{ match.user.full_name }}</div>
+                        </div>
+
+                        <div class="small fw-semibold text-muted text-uppercase mb-2">Mathematical Weight Contributions:</div>
+                        <ul class="list-group list-group-flush small mb-3">
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Skill Exchange Affinity</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ match.breakdown.skill_match_label }}</div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">+{{ match.breakdown.skill_match_points }}%</span>
+                            </li>
+                            {% if match.breakdown.multi_skill_bonus > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Multi-Skill Overlap Bonus</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Multiple matching skill pairs found</div>
+                                </div>
+                                <span class="badge bg-info rounded-pill">+{{ match.breakdown.multi_skill_bonus }}%</span>
+                            </li>
+                            {% endif %}
+                            {% if match.breakdown.proficiency_bonus > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Mentor Proficiency Multiplier</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Advanced or Expert instruction capability</div>
+                                </div>
+                                <span class="badge bg-success rounded-pill">+{{ match.breakdown.proficiency_bonus }}%</span>
+                            </li>
+                            {% endif %}
+                            {% if match.breakdown.schedule_bonus > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Schedule & Availability Harmony</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Matching or flexible availability window</div>
+                                </div>
+                                <span class="badge bg-warning text-dark rounded-pill">+{{ match.breakdown.schedule_bonus }}%</span>
+                            </li>
+                            {% endif %}
+                            {% if match.breakdown.location_bonus > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Location & Delivery Mode</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Location proximity or remote-friendly</div>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill">+{{ match.breakdown.location_bonus }}%</span>
+                            </li>
+                            {% endif %}
+                            {% if match.breakdown.reputation_bonus > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <span class="fw-bold text-dark">Community Trust & Rating Boost</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">High review average on completed swaps</div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">+{{ match.breakdown.reputation_bonus }}%</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+
+                        <div class="p-2 bg-light rounded text-muted" style="font-size: 0.75rem;">
+                            <i class="bi bi-info-circle me-1 text-primary"></i> Score is capped at 100%. Algorithmic time complexity: $O(N)$ with hash-set intersection.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <a href="{{ url_for('exchanges.request_exchange', receiver_id=match.user.id) }}" class="btn btn-primary btn-sm">
+                            Initiate Exchange
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded border">
+        <i class="bi bi-emoji-smile fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark">No matches found with current filter threshold</h5>
+        <p class="text-muted small mb-3">
+            Try lowering the minimum score or add more skills to your teaching and learning lists to increase your match pool!
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('main.smart_matching', min_score=20) }}" class="btn btn-outline-primary btn-sm">Show All Matches (20%+)</a>
+            <a href="{{ url_for('auth.manage_skills') }}" class="btn btn-primary btn-sm">Manage My Skills</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

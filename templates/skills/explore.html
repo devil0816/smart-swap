@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Skills & Exchange Partners – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Explore Skills Directory</h2>
+        <p class="text-muted small">Search skills, discover mentors, and find your next knowledge exchange partner</p>
+    </div>
+
+    <!-- Filter & Search Card -->
+    <div class="custom-card p-4 mb-4">
+        <form method="GET" action="{{ url_for('main.explore') }}">
+            <div class="row g-3">
+                <!-- Search Query -->
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Keyword or Skill</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control" placeholder="e.g. Python, Figma, Spanish, Alex..." value="{{ query_text }}">
+                    </div>
+                </div>
+
+                <!-- Skill Type -->
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Looking For</label>
+                    <select name="type" class="form-select">
+                        <option value="teach" {% if selected_type == 'teach' %}selected{% endif %}>People Teaching</option>
+                        <option value="learn" {% if selected_type == 'learn' %}selected{% endif %}>People Wanting to Learn</option>
+                    </select>
+                </div>
+
+                <!-- Category -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for cat, label in categories %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Proficiency Level -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Experience Level</label>
+                    <select name="level" class="form-select">
+                        <option value="">Any Level</option>
+                        {% for val, label in proficiency_choices %}
+                        <option value="{{ val }}" {% if selected_level == val %}selected{% endif %}>{{ val }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Location -->
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-geo-alt text-muted"></i></span>
+                        <input type="text" name="location" class="form-control" placeholder="City or Remote" value="{{ selected_location }}">
+                    </div>
+                </div>
+
+                <!-- Availability -->
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label small fw-semibold text-muted">Availability</label>
+                    <select name="availability" class="form-select">
+                        <option value="">Any Availability</option>
+                        {% for val, label in availability_choices %}
+                        <option value="{{ val }}" {% if selected_availability == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit / Clear Buttons -->
+                <div class="col-lg-4 col-md-12 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('main.explore') }}" class="btn btn-outline-secondary" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted small">
+            Showing <span class="fw-bold text-dark">{{ results.total }}</span> results
+            {% if selected_category %} in <span class="badge bg-primary-subtle text-primary">{{ selected_category }}</span>{% endif %}
+            {% if selected_type == 'teach' %}(Offering to Teach){% else %}(Looking to Learn){% endif %}
+        </div>
+    </div>
+
+    <!-- Results Cards Grid -->
+    {% if results.items %}
+    <div class="row g-4 mb-4">
+        {% for us in results.items %}
+        <div class="col-lg-4 col-md-6">
+            <div class="custom-card p-4 h-100 hover-lift d-flex flex-column justify-content-between">
+                <div>
+                    <!-- User Header -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="{{ us.user.get_avatar_url() }}" alt="{{ us.user.full_name }}" class="avatar-img" width="48" height="48">
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-0">
+                                <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="text-dark text-decoration-none">
+                                    {{ us.user.full_name }}
+                                </a>
+                            </h6>
+                            <div class="small text-muted">@{{ us.user.username }}</div>
+                        </div>
+                        <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                            ★ {{ us.user.average_rating }}
+                        </div>
+                    </div>
+
+                    <!-- Skill Info -->
+                    <div class="p-3 bg-light rounded-3 mb-3 border">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <span class="fw-bold text-primary">{{ us.skill.name }}</span>
+                            <span class="badge {% if us.skill_type == 'teach' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}" style="font-size: 0.7rem;">
+                                {{ us.proficiency_level }}
+                            </span>
+                        </div>
+                        <div class="small text-muted mb-2">
+                            <span class="badge bg-white text-secondary border me-1">{{ us.skill.category }}</span>
+                            {% if us.skill_type == 'teach' %}
+                            <span>{{ us.experience_years }} yr{{ 's' if us.experience_years > 1 else '' }} exp</span>
+                            {% endif %}
+                        </div>
+                        {% if us.notes %}
+                        <div class="small text-secondary fst-italic text-truncate">"{{ us.notes }}"</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- User metadata -->
+                    <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
+                        <span><i class="bi bi-geo-alt me-1 text-primary"></i> {{ us.user.location }}</span>
+                        <span>&bull;</span>
+                        <span><i class="bi bi-clock me-1 text-primary"></i> {{ us.user.availability }}</span>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="pt-3 border-top d-flex gap-2">
+                    <a href="{{ url_for('auth.user_profile', username=us.user.username) }}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                        View Profile
+                    </a>
+                    {% if current_user.is_authenticated and current_user.id != us.user.id %}
+                    <a href="{{ url_for('exchanges.request_exchange', receiver_id=us.user.id) }}" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-arrow-left-right me-1"></i> Swap
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if results.pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if results.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.explore', page=results.prev_num, q=query_text, category=selected_category, type=selected_type, level=selected_level, location=selected_location, availability=selected_availability) }}">Previous</a>
+            </li>
+            {% endif %}
+            {% for page_num in results.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == results.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.explore', page=page_num, q=query_text, category=selected_category, type=selected_type, level=selected_level, location=selected_location, availability=selected_availability) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if results.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.explore', page=results.next_num, q=query_text, category=selected_category, type=selected_type, level=selected_level, location=selected_location, availability=selected_availability) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5 bg-white rounded border">
+        <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark">No skills or members matched your search</h5>
+        <p class="text-muted small mb-3">Try adjusting your filters, clearing keywords, or browsing popular categories.</p>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-primary btn-sm">Reset All Filters</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

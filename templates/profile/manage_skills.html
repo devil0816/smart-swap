@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Skills – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-mortarboard text-primary me-2"></i> My Skills Portfolio</h3>
+            <p class="text-muted small mb-0">List what you can teach and what you want to learn to get matched with exchange partners</p>
+        </div>
+        <a href="{{ url_for('auth.user_profile', username=current_user.username) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-person me-1"></i> View Public Profile
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Skill Form -->
+        <div class="col-lg-5">
+            <div class="custom-card p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-plus-circle text-primary me-2"></i> Add Skill to Profile
+                </h5>
+
+                <form method="POST" action="{{ url_for('auth.manage_skills') }}">
+                    {{ add_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="skill_type">{{ add_form.skill_type.label.text }}</label>
+                        {{ add_form.skill_type(class="form-select") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="skill_id">{{ add_form.skill_id.label.text }}</label>
+                        {{ add_form.skill_id(class="form-select") }}
+                        <div class="form-text small">
+                            Can't find your skill? <a href="#quickSkillCollapse" data-bs-toggle="collapse" class="text-primary text-decoration-none">Create a new skill entry</a>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label small fw-semibold" for="proficiency_level">{{ add_form.proficiency_level.label.text }}</label>
+                            {{ add_form.proficiency_level(class="form-select") }}
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold" for="experience_years">{{ add_form.experience_years.label.text }}</label>
+                            {{ add_form.experience_years(class="form-control", min="0", max="50") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="notes">{{ add_form.notes.label.text }}</label>
+                        {{ add_form.notes(class="form-control", rows=2, placeholder="e.g. Focus on modern React hooks and Tailwind CSS...") }}
+                    </div>
+
+                    <button type="submit" name="submit_add_skill" value="1" class="btn btn-primary w-100 fw-semibold">
+                        <i class="bi bi-plus-lg me-1"></i> Add to My Skills
+                    </button>
+                </form>
+            </div>
+
+            <!-- Quick Create Skill Form (Collapsible) -->
+            <div class="collapse mb-4" id="quickSkillCollapse">
+                <div class="custom-card p-4 border-info bg-light">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-folder-plus text-info me-2"></i> Register New Skill</h6>
+                    <p class="small text-muted mb-3">If a skill doesn't exist in our directory yet, submit it here:</p>
+
+                    <form method="POST" action="{{ url_for('auth.manage_skills') }}">
+                        {{ quick_skill_form.hidden_tag() }}
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold" for="name">{{ quick_skill_form.name.label.text }}</label>
+                            {{ quick_skill_form.name(class="form-control form-control-sm", placeholder="e.g. Kotlin Programming") }}
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold" for="category">{{ quick_skill_form.category.label.text }}</label>
+                            {{ quick_skill_form.category(class="form-select form-select-sm") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="description">{{ quick_skill_form.description.label.text }}</label>
+                            {{ quick_skill_form.description(class="form-control form-control-sm", rows=2, placeholder="Brief overview of this skill...") }}
+                        </div>
+
+                        <button type="submit" name="submit_quick_skill" value="1" class="btn btn-info text-white btn-sm w-100">
+                            Register & Make Available
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Skills Lists -->
+        <div class="col-lg-7">
+            <!-- Teaching Skills -->
+            <div class="custom-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-mortarboard-fill text-primary me-2"></i> Skills I Teach ({{ teaching_skills|length }})
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Offered by You</span>
+                </div>
+
+                {% if teaching_skills %}
+                <div class="d-flex flex-column gap-3">
+                    {% for us in teaching_skills %}
+                    <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h6 class="fw-bold text-dark mb-0">{{ us.skill.name }}</h6>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">
+                                    {{ us.proficiency_level }}
+                                </span>
+                            </div>
+                            <div class="small text-muted mb-1">
+                                <span class="badge bg-white text-secondary border me-1">{{ us.skill.category }}</span>
+                                <span>{{ us.experience_years }} year{{ 's' if us.experience_years > 1 else '' }} experience</span>
+                            </div>
+                            {% if us.notes %}
+                            <div class="small text-secondary fst-italic">"{{ us.notes }}"</div>
+                            {% endif %}
+                        </div>
+                        <form action="{{ url_for('auth.delete_user_skill', user_skill_id=us.id) }}" method="POST" onsubmit="return confirm('Remove this skill from your profile?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Remove Skill">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 bg-light rounded">
+                    <i class="bi bi-mortarboard fs-2 text-muted mb-2"></i>
+                    <p class="text-muted small mb-0">You haven't listed any teaching skills yet. Add at least one to start receiving exchange proposals!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Learning Skills -->
+            <div class="custom-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-book-fill text-warning me-2"></i> Skills I Want to Learn ({{ learning_skills|length }})
+                    </h5>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Target Goals</span>
+                </div>
+
+                {% if learning_skills %}
+                <div class="d-flex flex-column gap-3">
+                    {% for us in learning_skills %}
+                    <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h6 class="fw-bold text-dark mb-0">{{ us.skill.name }}</h6>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.7rem;">
+                                    Goal: {{ us.proficiency_level }}
+                                </span>
+                            </div>
+                            <div class="small text-muted mb-1">
+                                <span class="badge bg-white text-secondary border">{{ us.skill.category }}</span>
+                            </div>
+                            {% if us.notes %}
+                            <div class="small text-secondary fst-italic">"{{ us.notes }}"</div>
+                            {% endif %}
+                        </div>
+                        <form action="{{ url_for('auth.delete_user_skill', user_skill_id=us.id) }}" method="POST" onsubmit="return confirm('Remove this learning goal?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Remove Goal">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 bg-light rounded">
+                    <i class="bi bi-book fs-2 text-muted mb-2"></i>
+                    <p class="text-muted small mb-0">You haven't specified any skills you wish to learn yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

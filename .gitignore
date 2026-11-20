@@ -1,0 +1,36 @@
+# Environment variables & secrets (CRITICAL: NEVER COMMIT SECRETS)
+.env
+.env.local
+*.env
+
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+ENV/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+smart_swap.db
+
+# Uploaded avatars (keep directory structure, ignore user uploads)
+static/uploads/avatars/*
+!static/uploads/avatars/.gitkeep
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing and coverage
+.coverage
+htmlcov/
+.pytest_cache/

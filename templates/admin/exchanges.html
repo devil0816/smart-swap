@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Exchanges Monitor – Admin – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-arrow-repeat text-success me-2"></i> Exchanges Monitor</h3>
+            <p class="text-muted small mb-0">Track all knowledge exchange operations, requests, and completion states</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <div class="custom-card p-3 mb-4">
+        <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="small fw-semibold text-muted me-2">Status:</span>
+            <a href="{{ url_for('admin.exchanges') }}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+            <a href="{{ url_for('admin.exchanges', status='accepted') }}" class="btn btn-sm {% if selected_status == 'accepted' %}btn-success{% else %}btn-outline-secondary{% endif %}">Active</a>
+            <a href="{{ url_for('admin.exchanges', status='pending') }}" class="btn btn-sm {% if selected_status == 'pending' %}btn-warning{% else %}btn-outline-secondary{% endif %}">Pending</a>
+            <a href="{{ url_for('admin.exchanges', status='completed') }}" class="btn btn-sm {% if selected_status == 'completed' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Completed</a>
+            <a href="{{ url_for('admin.exchanges', status='rejected') }}" class="btn btn-sm {% if selected_status == 'rejected' %}btn-danger{% else %}btn-outline-secondary{% endif %}">Rejected</a>
+        </form>
+    </div>
+
+    <!-- Exchanges Table -->
+    <div class="custom-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Sender (Proposer)</th>
+                        <th>Receiver (Partner)</th>
+                        <th>Skills Exchanged</th>
+                        <th>Status</th>
+                        <th>Date Initiated</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ex in exchanges_page.items %}
+                    <tr>
+                        <td class="fw-bold">#{{ ex.id }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ ex.sender.get_avatar_url() }}" alt="{{ ex.sender.full_name }}" class="avatar-img" width="28" height="28">
+                                <div>
+                                    <div class="fw-semibold">{{ ex.sender.full_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">@{{ ex.sender.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ ex.receiver.get_avatar_url() }}" alt="{{ ex.receiver.full_name }}" class="avatar-img" width="28" height="28">
+                                <div>
+                                    <div class="fw-semibold">{{ ex.receiver.full_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">@{{ ex.receiver.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div><span class="text-primary fw-semibold">{{ ex.offered_skill.name }}</span></div>
+                            <div class="text-muted" style="font-size: 0.75rem;">&harr; <span class="text-warning-emphasis fw-semibold">{{ ex.requested_skill.name }}</span></div>
+                        </td>
+                        <td>
+                            <span class="badge {% if ex.status == 'completed' %}bg-primary{% elif ex.status == 'accepted' %}bg-success{% elif ex.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ ex.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ ex.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('exchanges.exchange_detail', exchange_id=ex.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if exchanges_page.pages > 1 %}
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if exchanges_page.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.exchanges', page=exchanges_page.prev_num, status=selected_status) }}">Previous</a></li>
+            {% endif %}
+            {% for p in exchanges_page.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    <li class="page-item {% if p == exchanges_page.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.exchanges', page=p, status=selected_status) }}">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if exchanges_page.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.exchanges', page=exchanges_page.next_num, status=selected_status) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}System Architecture & Technical Specifications – Smart Swap{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Header banner -->
+    <div class="custom-card p-4 p-md-5 mb-4 text-center bg-white border-primary">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold mb-2">
+            <i class="bi bi-cpu me-1"></i> Technical Documentation & Engineering Defense
+        </span>
+        <h2 class="fw-bold mb-2">Smart Swap System Architecture</h2>
+        <p class="text-muted small mx-auto" style="max-width: 700px;">
+            Comprehensive academic breakdown of software design patterns, entity-relationship structures, security controls, and algorithmic formulations.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- 1. Architectural Pattern -->
+        <div class="col-lg-6">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-layers-fill text-primary me-2"></i> 1. Modular MVC Blueprint Architecture
+                </h5>
+                <p class="small text-muted mb-3">
+                    Smart Swap is structured adhering strictly to the **Model-View-Controller (MVC)** design pattern using Flask Blueprints for clean decoupling of concerns:
+                </p>
+                <div class="d-flex flex-column gap-2 small">
+                    <div class="p-3 bg-light rounded border">
+                        <strong class="text-primary">Models (`models.py`):</strong> SQLAlchemy ORM declarative classes representing database entities with composite unique constraints and cascading rules.
+                    </div>
+                    <div class="p-3 bg-light rounded border">
+                        <strong class="text-primary">Controllers / Blueprints (`routes/`):</strong> Modular blueprints (`auth`, `main`, `exchanges`, `messages`, `admin`) handling HTTP routing, request parsing, session authentication, and data operations.
+                    </div>
+                    <div class="p-3 bg-light rounded border">
+                        <strong class="text-primary">Views (`templates/`):</strong> Semantic HTML5 templates rendered with Jinja2, utilizing component inheritance from `base.html` and Bootstrap 5 responsive styling.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Security Architecture -->
+        <div class="col-lg-6">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-shield-lock-fill text-success me-2"></i> 2. Security & Defensive Engineering
+                </h5>
+                <p class="small text-muted mb-3">
+                    Implemented multi-layered defense to safeguard user integrity and prevent common web vulnerabilities:
+                </p>
+                <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                    <li class="p-2 bg-light rounded border d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>Cryptographic Password Hashing:</strong> Werkzeug's secure hashing (`scrypt`/`pbkdf2`) prevents plain-text credential leaks.
+                        </div>
+                    </li>
+                    <li class="p-2 bg-light rounded border d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>CSRF Attack Protection:</strong> Flask-WTF cryptographically signed tokens on every state-altering form.
+                        </div>
+                    </li>
+                    <li class="p-2 bg-light rounded border d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>SQL Injection Prevention:</strong> Parameterized queries guaranteed through SQLAlchemy ORM expressions.
+                        </div>
+                    </li>
+                    <li class="p-2 bg-light rounded border d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>Role-Based Access Control (RBAC):</strong> `@admin_required` decorators gating sensitive moderation endpoints.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Smart Matching Algorithmic Formulation -->
+    <div class="custom-card p-4 p-md-5 mb-4">
+        <h5 class="fw-bold text-dark mb-3">
+            <i class="bi bi-calculator-fill text-warning me-2"></i> 3. Mathematical Formulation of Compatibility Score
+        </h5>
+        <p class="small text-muted mb-3">
+            The compatibility function $C(U_1, U_2)$ calculates a weighted affinity metric in $O(N)$ time complexity:
+        </p>
+
+        <div class="p-4 bg-light rounded-3 border font-monospace text-dark text-center my-3" style="font-size: 1.1rem;">
+            $$Score = \min\Big(100,\; W_{\text{skill}} + W_{\text{multi}} + W_{\text{prof}} + W_{\text{sched}} + W_{\text{loc}} + W_{\text{rating}}\Big)$$
+        </div>
+
+        <div class="row g-3 small mt-2">
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border h-100">
+                    <strong class="text-primary d-block mb-1">$W_{\text{skill}}$ (Core Overlap)</strong>
+                    <div class="text-muted">
+                        &bull; Mutual 2-Way: <strong>+55 pts</strong><br>
+                        &bull; One-way Mentor: <strong>+35 pts</strong><br>
+                        &bull; One-way Learner: <strong>+25 pts</strong><br>
+                        &bull; Category affinity: <strong>+15 pts</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border h-100">
+                    <strong class="text-primary d-block mb-1">$W_{\text{prof}} + W_{\text{sched}}$ (Alignment)</strong>
+                    <div class="text-muted">
+                        &bull; Advanced/Expert mentor: <strong>+10 pts</strong><br>
+                        &bull; Multi-skill pair: <strong>Up to +15 pts</strong><br>
+                        &bull; Schedule match / Flexible: <strong>+10 pts</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded border h-100">
+                    <strong class="text-primary d-block mb-1">$W_{\text{loc}} + W_{\text{rating}}$ (Trust & Mode)</strong>
+                    <div class="text-muted">
+                        &bull; Location/Remote match: <strong>+10 pts</strong><br>
+                        &bull; Top Community Rating (4.5★+): <strong>+10 pts</strong><br>
+                        &bull; Good Rating (4.0★+): <strong>+5 pts</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Database Relational Model (ER Architecture) -->
+    <div class="custom-card p-4 p-md-5 mb-4">
+        <h5 class="fw-bold text-dark mb-3">
+            <i class="bi bi-diagram-3-fill text-info me-2"></i> 4. Entity-Relationship (ER) Schema Specifications
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Table</th>
+                        <th>Primary Key</th>
+                        <th>Foreign Keys & Constraints</th>
+                        <th>Functional Responsibility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-primary">users</td>
+                        <td><code>id</code></td>
+                        <td><code>unique(username, email)</code></td>
+                        <td>Stores member profiles, hashed passwords, availability, and administrative status.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">skills</td>
+                        <td><code>id</code></td>
+                        <td><code>unique(name)</code></td>
+                        <td>Standardized catalog of skills mapped across 8 domain categories.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">user_skills</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(user_id, skill_id)</code>, <code>uq(user_id, skill_id, skill_type)</code></td>
+                        <td>Many-to-Many bridge table tracking teaching vs learning roles and proficiency.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">exchange_requests</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(sender_id, receiver_id, offered_skill_id, requested_skill_id)</code></td>
+                        <td>Core state machine: <code>pending</code> &rarr; <code>accepted</code> &rarr; <code>completed</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">messages</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(sender_id, receiver_id, exchange_id)</code></td>
+                        <td>Threaded communication history supporting real-time AJAX transport.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">reviews</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(exchange_id, reviewer_id, reviewee_id)</code></td>
+                        <td>Verified post-completion feedback enforcing 1-to-5 star reputation metrics.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">notifications</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(user_id)</code></td>
+                        <td>In-app reactive alerts for proposals, status updates, and incoming messages.</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">reports</td>
+                        <td><code>id</code></td>
+                        <td><code>FK(reporter_id, reported_user_id)</code></td>
+                        <td>Community moderation tickets reviewed by platform administrators.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<!-- KaTeX Math Rendering CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- KaTeX Math Rendering JS -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});">
+</script>
+{% endblock %}
