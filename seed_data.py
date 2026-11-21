@@ -76,31 +76,31 @@ def seed():
         admin.set_password('admin123')
         db.session.add(admin)
 
-        # 2. Alex Chen
-        alex = User(
-            username='alex_chen',
-            email='alex@example.com',
-            full_name='Alex Chen',
+        # 2. Sachin 
+        sachin = User(
+            username='sachin_py',
+            email='Sachin784@gmail.com',
+            full_name='Sachin Kumar',
             headline='Machine Learning Researcher & Python Developer',
             bio='Software engineer by day, passionate open-source contributor. I love explaining complex algorithms simply and am eager to polish my design skills.',
             location='San Francisco, CA (Remote)',
             availability='Flexible'
         )
-        alex.set_password('password123')
-        db.session.add(alex)
+        sachin.set_password('password123')
+        db.session.add(sachin)
 
-        # 3. Sarah Jenkins
-        sarah = User(
-            username='sarah_ux',
-            email='sarah@example.com',
-            full_name='Sarah Jenkins',
+        # 3. Markus
+        Markus  = User(
+            username='Markus_ux',
+            email='Markus@example.com',
+            full_name='Markus',
             headline='Senior Product Designer & Design System Specialist',
             bio='7+ years in UI/UX creating software experiences. Wanting to learn Python and backend basics so I can build functional prototypes myself!',
             location='New York, NY (Remote)',
             availability='Flexible'
         )
-        sarah.set_password('password123')
-        db.session.add(sarah)
+        Markus.set_password('password123')
+        db.session.add(Markus)
 
         # 4. Marco Rossi
         marco = User(
@@ -141,33 +141,20 @@ def seed():
         liam.set_password('password123')
         db.session.add(liam)
 
-        # 7. Elena Rostova
-        elena = User(
-            username='elena_rostova',
-            email='elena@example.com',
-            full_name='Elena Rostova',
-            headline='Growth Marketer & Copywriter',
-            bio='Helping startups find product-market fit. I can help you scale user acquisition, improve your pitch copy, and master SEO in exchange for French lessons.',
-            location='Berlin / Remote',
-            availability='Weekday Mornings'
-        )
-        elena.set_password('password123')
-        db.session.add(elena)
-
         db.session.flush()
 
         print("Attaching user skills (teaching & learning)...")
-        # Alex's skills
-        db.session.add(UserSkill(user_id=alex.id, skill_id=skill_map['Python Programming'].id, skill_type='teach', proficiency_level='Expert', experience_years=6, notes='Data structures, OOP, API development, script automation'))
-        db.session.add(UserSkill(user_id=alex.id, skill_id=skill_map['Machine Learning & AI'].id, skill_type='teach', proficiency_level='Advanced', experience_years=4, notes='PyTorch, NLP, practical model fine-tuning'))
-        db.session.add(UserSkill(user_id=alex.id, skill_id=skill_map['UI/UX Design (Figma)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Want to learn design fundamentals, Figma auto-layout and wireframing'))
-        db.session.add(UserSkill(user_id=alex.id, skill_id=skill_map['Spanish (Conversational)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=1, notes='Travel conversation and everyday fluency'))
+        # Sachin's skills
+        db.session.add(UserSkill(user_id=sachin.id, skill_id=skill_map['Python Programming'].id, skill_type='teach', proficiency_level='Expert', experience_years=6, notes='Data structures, OOP, API development, script automation'))
+        db.session.add(UserSkill(user_id=sachin.id, skill_id=skill_map['Machine Learning & AI'].id, skill_type='teach', proficiency_level='Advanced', experience_years=4, notes='PyTorch, NLP, practical model fine-tuning'))
+        db.session.add(UserSkill(user_id=sachin.id, skill_id=skill_map['UI/UX Design (Figma)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Want to learn design fundamentals, Figma auto-layout and wireframing'))
+        db.session.add(UserSkill(user_id=sachin.id, skill_id=skill_map['Spanish (Conversational)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=1, notes='Travel conversation and everyday fluency'))
 
-        # Sarah's skills (PERFECT MATCH WITH ALEX!)
-        db.session.add(UserSkill(user_id=sarah.id, skill_id=skill_map['UI/UX Design (Figma)'].id, skill_type='teach', proficiency_level='Expert', experience_years=7, notes='Design systems, user research, wireframing, prototype testing'))
-        db.session.add(UserSkill(user_id=sarah.id, skill_id=skill_map['Graphic Design & Branding'].id, skill_type='teach', proficiency_level='Advanced', experience_years=5, notes='Visual identity, typography, color harmony and vector design'))
-        db.session.add(UserSkill(user_id=sarah.id, skill_id=skill_map['Python Programming'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Starting from scratch: scripting, variables, web scrapers'))
-        db.session.add(UserSkill(user_id=sarah.id, skill_id=skill_map['Web Development (Flask/Django)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Connecting backend routes to my frontend mockups'))
+        # Markus's skills (PERFECT MATCH WITH sachin!)
+        db.session.add(UserSkill(user_id=Markus.id, skill_id=skill_map['UI/UX Design (Figma)'].id, skill_type='teach', proficiency_level='Expert', experience_years=7, notes='Design systems, user research, wireframing, prototype testing'))
+        db.session.add(UserSkill(user_id=Markus.id, skill_id=skill_map['Graphic Design & Branding'].id, skill_type='teach', proficiency_level='Advanced', experience_years=5, notes='Visual identity, typography, color harmony and vector design'))
+        db.session.add(UserSkill(user_id=Markus.id, skill_id=skill_map['Python Programming'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Starting from scratch: scripting, variables, web scrapers'))
+        db.session.add(UserSkill(user_id=Markus.id, skill_id=skill_map['Web Development (Flask/Django)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Connecting backend routes to my frontend mockups'))
 
         # Marco's skills
         db.session.add(UserSkill(user_id=marco.id, skill_id=skill_map['Italian (Conversational)'].id, skill_type='teach', proficiency_level='Expert', experience_years=10, notes='Native Italian speaker, grammar, pronunciation, literature'))
@@ -185,19 +172,13 @@ def seed():
         db.session.add(UserSkill(user_id=liam.id, skill_id=skill_map['Spanish (Conversational)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Basic Spanish for international music tours'))
         db.session.add(UserSkill(user_id=liam.id, skill_id=skill_map['Video Editing (Premiere/DaVinci)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Editing YouTube guitar tutorials and music video clips'))
 
-        # Elena's skills
-        db.session.add(UserSkill(user_id=elena.id, skill_id=skill_map['Digital Marketing & SEO'].id, skill_type='teach', proficiency_level='Expert', experience_years=8, notes='Organic growth, technical SEO, keyword research, conversion rate optimization'))
-        db.session.add(UserSkill(user_id=elena.id, skill_id=skill_map['Content Writing & Copywriting'].id, skill_type='teach', proficiency_level='Advanced', experience_years=6, notes='Landing page copy, email sequences, high-impact storytelling'))
-        db.session.add(UserSkill(user_id=elena.id, skill_id=skill_map['Graphic Design & Branding'].id, skill_type='learn', proficiency_level='Intermediate', experience_years=1, notes='Elevating social media visuals and presentation slide decks'))
-        db.session.add(UserSkill(user_id=elena.id, skill_id=skill_map['French (Beginner to Intermediate)'].id, skill_type='learn', proficiency_level='Beginner', experience_years=0, notes='Conversational French for relocation and business'))
-
         db.session.flush()
 
         print("Seeding sample exchanges...")
-        # 1. Completed Exchange between Alex and Sarah
+        # 1. Completed Exchange between Sachin and Markus
         completed_ex = ExchangeRequest(
-            sender_id=alex.id,
-            receiver_id=sarah.id,
+            sender_id=sachin.id,
+            receiver_id=Markus.id,
             offered_skill_id=skill_map['Python Programming'].id,
             requested_skill_id=skill_map['UI/UX Design (Figma)'].id,
             status='completed',
@@ -209,25 +190,25 @@ def seed():
         db.session.add(completed_ex)
         db.session.flush()
 
-        # Messages in Alex & Sarah's exchange
-        db.session.add(Message(sender_id=alex.id, receiver_id=sarah.id, exchange_id=completed_ex.id, content="Hi Sarah! Excited to swap skills. I prepared a syllabus for our Python crash course: variables, data structures, and small scripts.", created_at=datetime.utcnow() - timedelta(days=19)))
-        db.session.add(Message(sender_id=sarah.id, receiver_id=alex.id, exchange_id=completed_ex.id, content="Sounds incredible Alex! In return, I have our Figma workspace ready with auto-layout templates and component libraries.", created_at=datetime.utcnow() - timedelta(days=18)))
-        db.session.add(Message(sender_id=sarah.id, receiver_id=alex.id, exchange_id=completed_ex.id, content="That session on list comprehensions was so enlightening! Thank you!", created_at=datetime.utcnow() - timedelta(days=5)))
-        db.session.add(Message(sender_id=alex.id, receiver_id=sarah.id, exchange_id=completed_ex.id, content="And your feedback on my app's navigation wireframes transformed the whole UX. Let's mark this exchange as completed!", created_at=datetime.utcnow() - timedelta(days=3)))
+        # Messages in Sachin & Markus's exchange
+        db.session.add(Message(sender_id=sachin.id, receiver_id=Markus.id, exchange_id=completed_ex.id, content="Hi Sarah! Excited to swap skills. I prepared a syllabus for our Python crash course: variables, data structures, and small scripts.", created_at=datetime.utcnow() - timedelta(days=19)))
+        db.session.add(Message(sender_id=Markus.id, receiver_id=sachin.id, exchange_id=completed_ex.id, content="Sounds incredible Alex! In return, I have our Figma workspace ready with auto-layout templates and component libraries.", created_at=datetime.utcnow() - timedelta(days=18)))
+        db.session.add(Message(sender_id=Markus.id, receiver_id=sachin.id, exchange_id=completed_ex.id, content="That session on list comprehensions was so enlightening! Thank you!", created_at=datetime.utcnow() - timedelta(days=5)))
+        db.session.add(Message(sender_id=sachin.id, receiver_id=Markus.id, exchange_id=completed_ex.id, content="And your feedback on my app's navigation wireframes transformed the whole UX. Let's mark this exchange as completed!", created_at=datetime.utcnow() - timedelta(days=3)))
 
         # Reviews for completed exchange
         db.session.add(Review(
             exchange_id=completed_ex.id,
-            reviewer_id=alex.id,
-            reviewee_id=sarah.id,
+            reviewer_id=sachin.id,
+            reviewee_id=Markus.id,
             rating=5,
             comment="Sarah is a world-class designer and a patient, engaging teacher! In just a few sessions she completely demystified Figma components and UX workflows for me. Highly recommended exchange partner!",
             created_at=datetime.utcnow() - timedelta(days=2)
         ))
         db.session.add(Review(
             exchange_id=completed_ex.id,
-            reviewer_id=sarah.id,
-            reviewee_id=alex.id,
+            reviewer_id=Markus.id,
+            reviewee_id=sachin.id,
             rating=5,
             comment="Alex broke down Python concepts with crystal clarity and real-world analogies. I went from fearing code to building my own automated CSV parser in two weeks! An absolute 10/10 mentor.",
             created_at=datetime.utcnow() - timedelta(days=2)
@@ -250,27 +231,27 @@ def seed():
         db.session.add(Message(sender_id=marco.id, receiver_id=liam.id, exchange_id=active_ex.id, content="Hi Liam! Looking forward to our next guitar lesson on barre chords this Thursday.", created_at=datetime.utcnow() - timedelta(days=2)))
         db.session.add(Message(sender_id=liam.id, receiver_id=marco.id, exchange_id=active_ex.id, content="Hey Marco! Practicing the Spanish phrases you sent. Thursday at 7 works great for me!", created_at=datetime.utcnow() - timedelta(days=1)))
 
-        # 3. Pending Incoming Request: Priya -> Alex
+        # 3. Pending Incoming Request: Priya -> Sachin
         pending_ex = ExchangeRequest(
             sender_id=priya.id,
-            receiver_id=alex.id,
+            receiver_id=sachin.id,
             offered_skill_id=skill_map['React & Modern Frontend'].id,
             requested_skill_id=skill_map['Machine Learning & AI'].id,
             status='pending',
-            message="Hi Alex! I saw your impressive ML background. I'm building an AI dashboard and need help with model integration. In exchange, I can teach you advanced React, Tailwind, and frontend architectures!",
+            message="Hi Sachin! I saw your impressive ML background. I'm building an AI dashboard and need help with model integration. In exchange, I can teach you advanced React, Tailwind, and frontend architectures!",
             schedule_notes='Flexible / Weekend afternoons',
             created_at=datetime.utcnow() - timedelta(hours=4)
         )
         db.session.add(pending_ex)
 
-        # 4. Pending Request: Elena -> Sarah
+        # 4. Pending Request: priya -> Markus
         pending_ex2 = ExchangeRequest(
-            sender_id=elena.id,
-            receiver_id=sarah.id,
+            sender_id=priya.id,
+            receiver_id=Markus.id,
             offered_skill_id=skill_map['Digital Marketing & SEO'].id,
             requested_skill_id=skill_map['Graphic Design & Branding'].id,
             status='pending',
-            message="Hi Sarah! I'd love to swap growth marketing and SEO strategy for some guidance on brand guidelines and color theory for my marketing consultancy.",
+            message="Hi Markus! I'd love to swap growth marketing and SEO strategy for some guidance on brand guidelines and color theory for my marketing consultancy.",
             schedule_notes='Remote / Morning sessions',
             created_at=datetime.utcnow() - timedelta(days=1)
         )
@@ -278,7 +259,7 @@ def seed():
 
         # Notifications
         db.session.add(Notification(
-            user_id=alex.id,
+            user_id=sachin.id,
             title='New Skill Exchange Request',
             message='Priya Patel wants to swap React Frontend for your Machine Learning expertise!',
             link='/exchanges',
@@ -287,10 +268,10 @@ def seed():
             created_at=datetime.utcnow() - timedelta(hours=4)
         ))
         db.session.add(Notification(
-            user_id=alex.id,
+            user_id=sachin.id,
             title='Review Received! ⭐',
             message='Sarah Jenkins left you a 5-star review for Python Programming!',
-            link=f'/u/{alex.username}',
+            link=f'/u/{sachin.username}',
             icon='bi-star-fill',
             is_read=True,
             created_at=datetime.utcnow() - timedelta(days=2)
