@@ -185,14 +185,18 @@
                         {% endif %}
                         <div class="d-flex gap-2">
                             <form action="{{ url_for('admin.update_report', report_id=rep.id) }}" method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="status" value="resolved">
                                 <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size: 0.75rem;">Mark Resolved</button>
                             </form>
                             <form action="{{ url_for('admin.update_report', report_id=rep.id) }}" method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="status" value="dismissed">
                                 <button type="submit" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;">Dismiss</button>
                             </form>
                             <form action="{{ url_for('admin.toggle_user_status', user_id=rep.reported_user.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Toggle suspension for this reported user?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">
                                 <button type="submit" class="btn btn-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">
                                     {% if rep.reported_user.is_active_account %}Suspend User{% else %}Unsuspend User{% endif %}
                                 </button>

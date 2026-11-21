@@ -181,6 +181,17 @@ def skills():
 def delete_skill(skill_id):
     skill = Skill.query.get_or_404(skill_id)
     name = skill.name
+    
+    # Check if any exchange requests reference this skill (foreign key protection)
+    linked_exchanges = ExchangeRequest.query.filter(
+        (ExchangeRequest.offered_skill_id == skill_id) | (ExchangeRequest.requested_skill_id == skill_id)
+    ).count()
+    if linked_exchanges > 0:
+        flash(f'Cannot delete skill "{name}" because it is actively referenced in {linked_exchanges} exchange request(s). Consider editing it instead to preserve referential history.', 'warning')
+        return redirect(url_for('admin.skills'))
+
+    # Remove user skill mappings referencing this skill before deleting
+    UserSkill.query.filter_by(skill_id=skill_id).delete()
     db.session.delete(skill)
     db.session.commit()
     flash(f'Skill "{name}" removed from the platform.', 'info')

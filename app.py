@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from flask import Flask, render_template
 from config import Config
-from extensions import db, login_manager
+from extensions import db, login_manager, csrf
 
 # Import models so SQLAlchemy discovers them
 import models
@@ -15,6 +15,7 @@ def create_app(config_class=Config):
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     # Register blueprints
     from routes.auth import auth_bp
@@ -59,12 +60,13 @@ def create_app(config_class=Config):
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        # Basic Content Security Policy that allows Bootstrap CDN, Icons, and local scripts
+        # Content Security Policy that allows Bootstrap CDN, Icons, local scripts, and Jitsi Meet iframe
         response.headers['Content-Security-Policy'] = (
             "default-src 'self' https://cdn.jsdelivr.net; "
             "img-src 'self' data: https:; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://meet.jit.si; "
+            "frame-src 'self' https://meet.jit.si; "
             "font-src 'self' https://cdn.jsdelivr.net;"
         )
         return response

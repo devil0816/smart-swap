@@ -101,11 +101,13 @@
                                 </a>
                                 {% if u.id != current_user.id %}
                                 <form action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Change account active status for this user?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm {% if u.is_active_account %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if u.is_active_account %}Suspend{% else %}Activate{% endif %}">
                                         <i class="bi {% if u.is_active_account %}bi-person-x{% else %}bi-person-check{% endif %}"></i>
                                     </button>
                                 </form>
                                 <form action="{{ url_for('admin.toggle_user_admin', user_id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Toggle admin privilege?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-outline-warning" title="Toggle Admin">
                                         <i class="bi bi-shield"></i>
                                     </button>

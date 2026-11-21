@@ -22,8 +22,20 @@ else:
     database_uri = 'sqlite:///' + os.path.join(basedir, 'smart_swap.db')
 
 
+# Determine environment mode
+is_debug = os.environ.get('FLASK_DEBUG', 'True').lower() in ('1', 'true', 'yes')
+
+
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'smart-swap-dev-secret-key-2026-exchange-platform'
+    # In production (FLASK_DEBUG=False), reject hardcoded fallback and enforce environment SECRET_KEY
+    if not is_debug:
+        secret = os.environ.get('SECRET_KEY')
+        if not secret:
+            raise ValueError("CRITICAL SECURITY ERROR: SECRET_KEY environment variable must be set in production mode!")
+        SECRET_KEY = secret
+    else:
+        SECRET_KEY = os.environ.get('SECRET_KEY') or 'smart-swap-dev-secret-key-2026-exchange-platform'
+
     SQLALCHEMY_DATABASE_URI = database_uri
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
@@ -33,7 +45,9 @@ class Config:
         'pool_recycle': 300,       # Recycle connections every 5 minutes to avoid idle timeouts
     }
     
-    # Session & Cookie Security Hardening
+    # Session & Cookie Security Hardening (Enforce Secure flag in production HTTPS)
+    SESSION_COOKIE_SECURE = not is_debug
+    REMEMBER_COOKIE_SECURE = not is_debug
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_HTTPONLY = True

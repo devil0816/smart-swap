@@ -104,14 +104,15 @@ def calculate_compatibility(current_user, candidate_user):
         breakdown['location_bonus'] = 5
         reasons.append("Remote learning friendly")
 
-    # 5. High Rating & Community Trust Bonus
+    # 5. High Rating & Community Trust Bonus (Only for users with verified reviews)
     if candidate_user.average_rating >= 4.5 and candidate_user.rating_count > 0:
         score += 10
         breakdown['reputation_bonus'] = 10
         reasons.append(f"Top-rated user ({candidate_user.average_rating}★ from {candidate_user.rating_count} reviews)")
-    elif candidate_user.average_rating >= 4.0:
+    elif candidate_user.average_rating >= 4.0 and candidate_user.rating_count > 0:
         score += 5
         breakdown['reputation_bonus'] = 5
+        reasons.append(f"Highly-rated user ({candidate_user.average_rating}★ from {candidate_user.rating_count} reviews)")
 
     # Cap score at 100%
     score = min(max(score, 10), 100)

@@ -1,6 +1,21 @@
 // Smart Swap Platform Interactive JS
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Ensure all raw POST forms include the CSRF token
+    const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMetaTag) {
+        const csrfTokenVal = csrfMetaTag.getAttribute('content');
+        document.querySelectorAll('form').forEach(form => {
+            if ((form.method || '').toUpperCase() === 'POST' && !form.querySelector('input[name="csrf_token"]')) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'csrf_token';
+                hiddenInput.value = csrfTokenVal;
+                form.appendChild(hiddenInput);
+            }
+        });
+    }
+
     // Theme toggle handling
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const themeIcon = document.getElementById('theme-icon');
@@ -124,11 +139,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     chatInput.disabled = true;
 
+                    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
                     fetch(`/api/messages/${partnerId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({ content: content })
                     })

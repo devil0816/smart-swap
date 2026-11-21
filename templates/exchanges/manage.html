@@ -98,6 +98,7 @@
                                 <i class="bi bi-chat-dots me-1"></i> Chat
                             </a>
                             <form action="{{ url_for('exchanges.complete_exchange', exchange_id=ex.id) }}" method="POST" onsubmit="return confirm('Mark this knowledge exchange as successfully completed?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-success btn-sm">
                                     <i class="bi bi-check-lg me-1"></i> Complete Swap
                                 </button>
@@ -156,11 +157,13 @@
 
                         <div class="d-flex gap-2 pt-3 border-top">
                             <form action="{{ url_for('exchanges.accept_exchange', exchange_id=req.id) }}" method="POST" class="flex-grow-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-success btn-sm w-100">
                                     <i class="bi bi-check-lg me-1"></i> Accept Swap
                                 </button>
                             </form>
                             <form action="{{ url_for('exchanges.reject_exchange', exchange_id=req.id) }}" method="POST" class="flex-grow-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                                     <i class="bi bi-x-lg me-1"></i> Decline
                                 </button>
@@ -212,6 +215,7 @@
                                 View Proposal
                             </a>
                             <form action="{{ url_for('exchanges.cancel_exchange', exchange_id=req.id) }}" method="POST" onsubmit="return confirm('Cancel this exchange request?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-outline-danger btn-sm">
                                     Cancel Request
                                 </button>
